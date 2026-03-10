@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Verify OTP | Exam Portal</title>
+  <style>
+    * { margin:0; padding:0; box-sizing:border-box; font-family:'Segoe UI',sans-serif; }
+
+    body {
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: linear-gradient(135deg, #0f172a, #1e293b, #312e81);
+      overflow: hidden;
+    }
+
+    .blob {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      opacity: 0.35;
+      animation: drift 10s infinite ease-in-out alternate;
+    }
+    .blob-1 { width:400px; height:400px; background:#6366f1; top:-100px; left:-100px; }
+    .blob-2 { width:350px; height:350px; background:#a855f7; bottom:-80px; right:-80px; animation-direction: alternate-reverse; }
+
+    @keyframes drift { from { transform: translate(0,0); } to { transform: translate(40px, 30px); } }
+
+    .card {
+      position: relative;
+      z-index: 10;
+      width: 420px;
+      padding: 44px 40px;
+      background: rgba(255,255,255,0.08);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+      color: white;
+      animation: slideUp 0.5s ease-out;
+    }
+
+    @keyframes slideUp {
+      from { opacity:0; transform: translateY(28px); }
+      to   { opacity:1; transform: translateY(0); }
+    }
+
+    .icon { text-align: center; font-size: 44px; margin-bottom: 10px; }
+
+    h2 {
+      text-align: center;
+      font-size: 24px;
+      font-weight: 700;
+      background: linear-gradient(to right, #fff, #c7d2fe);
+      -webkit-background-clip: text;
+      background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 28px;
+      line-height: 1.5;
+    }
+
+    .email-chip {
+      display: inline-block;
+      background: rgba(99,102,241,0.2);
+      border: 1px solid rgba(99,102,241,0.4);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #a5b4fc;
+      margin-top: 4px;
+    }
+
+    .flash {
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .danger  { background: rgba(239,68,68,0.2);  color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .success { background: rgba(34,197,94,0.2);  color: #4ade80; border: 1px solid rgba(34,197,94,0.3); }
+
+    .form-group { margin-bottom: 20px; }
+
+    label {
+      display: block;
+      font-size: 13px;
+      color: #cbd5e1;
+      margin-bottom: 7px;
+      font-weight: 500;
+    }
+
+    /* Big OTP input boxes */
+    .otp-input {
+      width: 100%;
+      padding: 16px;
+      background: rgba(15,23,42,0.6);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      color: white;
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: 12px;
+      text-align: center;
+      outline: none;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+    .otp-input::placeholder { color: #334155; letter-spacing: 4px; }
+    .otp-input:focus {
+      border-color: #818cf8;
+      box-shadow: 0 0 0 4px rgba(129,140,248,0.15);
+    }
+
+    .timer {
+      text-align: center;
+      font-size: 13px;
+      color: #64748b;
+      margin-top: 10px;
+    }
+    .timer span { color: #f87171; font-weight: 600; }
+
+    .btn {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #6366f1, #4f46e5);
+      border: none;
+      border-radius: 12px;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      margin-top: 6px;
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(99,102,241,0.45);
+    }
+    .btn:active { transform: translateY(0); }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 22px;
+      font-size: 13px;
+      color: #94a3b8;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .back-link:hover { color: #e2e8f0; }
+  </style>
+</head>
+<body>
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+
+  <div class="card">
+    <div class="icon">🔑</div>
+    <h2>Enter OTP</h2>
+    <p class="subtitle">
+      A 6-digit OTP was sent to<br>
+      <span class="email-chip">{{ email }}</span>
+    </p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="flash {{ category }}">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/verify-otp">
+      <div class="form-group">
+        <label>6-Digit OTP</label>
+        <input
+          type="text"
+          name="otp"
+          class="otp-input"
+          placeholder="• • • • • •"
+          maxlength="6"
+          pattern="\d{6}"
+          inputmode="numeric"
+          required
+          autofocus
+        >
+      </div>
+
+      <div class="timer">OTP expires in <span id="countdown">10:00</span></div>
+
+      <button type="submit" class="btn" style="margin-top:18px;">Verify OTP</button>
+    </form>
+
+    <a href="{{ url_for('auth_bp.forgot_password') }}" class="back-link">← Request a new OTP</a>
+  </div>
+
+  <script>
+    // Countdown timer (10 min)
+    let seconds = 600;
+    const el = document.getElementById('countdown');
+    const interval = setInterval(() => {
+      seconds--;
+      const m = Math.floor(seconds / 60).toString().padStart(2, '0');
+      const s = (seconds % 60).toString().padStart(2, '0');
+      el.textContent = `${m}:${s}`;
+      if (seconds <= 0) {
+        clearInterval(interval);
+        el.textContent = 'Expired';
+        el.style.color = '#ef4444';
+      }
+    }, 1000);
+  </script>
+</body>
+</html>

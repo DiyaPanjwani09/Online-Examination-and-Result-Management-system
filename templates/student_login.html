@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Login | Secure Exam Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --secondary: #0ea5e9;
+  --dark-bg: #0f172a;
+  --card-bg: rgba(30, 41, 59, 0.7);
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --input-bg: rgba(15, 23, 42, 0.6);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --input-focus: rgba(59, 130, 246, 0.5);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Inter', sans-serif;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: var(--dark-bg);
+  overflow: hidden;
+  position: relative;
+}
+
+/* Interactive Canvas Background */
+#bg-canvas {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+}
+
+/* Login Container */
+.login-wrapper {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+  perspective: 1000px;
+}
+
+.login-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 24px;
+  padding: 40px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-style: preserve-3d;
+  transition: transform 0.1s;
+}
+
+/* 3D Student Avatar Container */
+.avatar-container {
+  width: 160px;
+  height: 160px;
+  margin-top: -80px; /* Pull it up out of the card slightly */
+  margin-bottom: 20px;
+  position: relative;
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.3));
+  z-index: 20;
+}
+
+#student-avatar {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Avatar Animations & Transitions */
+#pupil-l, #pupil-r {
+  transition: transform 0.1s ease-out;
+}
+
+#head {
+  transition: transform 0.2s ease-out;
+  transform-origin: center center;
+}
+
+/* Typography */
+.login-header {
+  text-align: center;
+  margin-bottom: 30px;
+  width: 100%;
+}
+
+.login-title {
+  color: var(--text-main);
+  font-size: 24px;
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  margin-bottom: 6px;
+}
+
+.login-subtitle {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+/* Form Styles */
+.login-form {
+  width: 100%;
+}
+
+.form-group {
+  margin-bottom: 20px;
+  position: relative;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+  transition: color 0.3s;
+}
+
+.form-group:focus-within .form-label {
+  color: var(--primary);
+}
+
+.form-input {
+  width: 100%;
+  background: var(--input-bg);
+  border: 1px solid var(--input-border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  color: var(--text-main);
+  font-size: 15px;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.form-input::placeholder {
+  color: rgba(148, 163, 184, 0.4);
+}
+
+.form-input:focus {
+  outline: none;
+  background: rgba(15, 23, 42, 0.8);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2), inset 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);
+}
+
+.submit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.5);
+}
+
+.submit-btn:active {
+  transform: translateY(1px);
+}
+
+/* Links */
+.links-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 24px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.auth-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.auth-link:hover {
+  color: var(--secondary);
+}
+
+/* Flash Messages */
+.flash-container {
+  width: 100%;
+  margin-bottom: 20px;
+  position: absolute;
+  top: -60px;
+  left: 0;
+}
+.flash-message {
+  padding: 12px 16px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  animation: slideIn 0.4s ease-out forwards;
+}
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.flash-danger { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+.flash-success { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
+.flash-info { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
+</style>
+</head>
+<body>
+
+<!-- Interactive Particle Background -->
+<canvas id="bg-canvas"></canvas>
+
+<div class="login-wrapper">
+  
+  <div class="login-card" id="login-card">
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <div class="flash-container">
+          {% for category, message in messages %}
+            <div class="flash-message flash-{{ category }}">
+              {{ message }}
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- 3D Student Avatar -->
+    <div class="avatar-container">
+      <svg id="student-avatar" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <radialGradient id="skinGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#fef08a" />
+            <stop offset="80%" stop-color="#f59e0b" />
+            <stop offset="100%" stop-color="#d97706" />
+          </radialGradient>
+          <radialGradient id="cheekGrad" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="rgba(239, 68, 68, 0.4)" />
+            <stop offset="100%" stop-color="rgba(239, 68, 68, 0)" />
+          </radialGradient>
+          <linearGradient id="hairGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#1e293b" />
+            <stop offset="100%" stop-color="#020617" />
+          </linearGradient>
+          <linearGradient id="shirtGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" stop-color="#3b82f6" />
+            <stop offset="50%" stop-color="#2563eb" />
+            <stop offset="100%" stop-color="#1d4ed8" />
+          </linearGradient>
+          <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#000" flood-opacity="0.35" />
+          </filter>
+          <filter id="innerShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.2" />
+          </filter>
+        </defs>
+
+        <!-- Torso / Shirt -->
+        <path d="M 25 210 C 25 130, 80 115, 100 115 C 120 115, 175 130, 175 210" fill="url(#shirtGrad)" filter="url(#shadow)" />
+        
+        <!-- Shirt Folds/Details -->
+        <path d="M 60 140 C 70 160, 65 190, 65 210" fill="none" stroke="#1e40af" stroke-width="3" stroke-linecap="round" />
+        <path d="M 140 140 C 130 160, 135 190, 135 210" fill="none" stroke="#1e40af" stroke-width="3" stroke-linecap="round" />
+
+        <!-- Collar -->
+        <path d="M 65 115 L 100 145 L 135 115 L 100 120 Z" fill="#f8fafc" filter="url(#innerShadow)" />
+        <path d="M 65 115 C 80 130, 95 140, 100 145 L 100 120 Z" fill="#e2e8f0" />
+        
+        <!-- Tie Highlight and Shadow -->
+        <polygon points="94,140 106,140 100,190" fill="#dc2626" filter="url(#shadow)" />
+        <polygon points="97,140 103,140 100,185" fill="#ef4444" />
+        <polygon points="94,130 106,130 102,142 98,142" fill="#b91c1c" />
+
+        <!-- Head Group (can tilt) -->
+        <g id="head">
+          <!-- Neck -->
+          <rect x="84" y="85" width="32" height="45" rx="12" fill="url(#skinGrad)" />
+          <path d="M 84 100 Q 100 115 116 100 L 116 130 L 84 130 Z" fill="rgba(0,0,0,0.15)" />
+
+          <!-- Back Hair -->
+          <path d="M 45 60 C 45 100, 55 110, 55 110 C 55 110, 145 110, 145 110 C 145 110, 155 100, 155 60 Z" fill="url(#hairGrad)" filter="url(#shadow)" />
+
+          <!-- Ears -->
+          <ellipse cx="48" cy="75" rx="10" ry="14" fill="url(#skinGrad)" filter="url(#shadow)" />
+          <path d="M 45 70 C 50 72, 50 78, 45 80" fill="none" stroke="rgba(180,83,9,0.5)" stroke-width="2" stroke-linecap="round" />
+          
+          <ellipse cx="152" cy="75" rx="10" ry="14" fill="url(#skinGrad)" filter="url(#shadow)" />
+          <path d="M 155 70 C 150 72, 150 78, 155 80" fill="none" stroke="rgba(180,83,9,0.5)" stroke-width="2" stroke-linecap="round" />
+
+          <!-- Face/Head Base -->
+          <rect x="52" y="25" width="96" height="106" rx="46" fill="url(#skinGrad)" filter="url(#shadow)" />
+          
+          <!-- Cheeks Base -->
+          <circle cx="70" cy="85" r="12" fill="url(#cheekGrad)" />
+          <circle cx="130" cy="85" r="12" fill="url(#cheekGrad)" />
+
+          <!-- Top Hair Structure -->
+          <path d="M 46 65 C 46 10, 154 10, 154 65 C 154 25, 46 25, 46 65" fill="url(#hairGrad)" />
+          <!-- Hair Bangs / Texture -->
+          <path d="M 50 45 Q 70 15 105 35 Q 90 25 50 45" fill="#334155" />
+          <path d="M 100 32 Q 130 15 148 45 Q 125 25 100 32" fill="#334155" />
+          <path d="M 46 60 Q 60 40 80 50 Q 80 35 110 45 Q 110 35 130 45 Q 140 40 154 60 C 154 30, 46 30, 46 60" fill="url(#hairGrad)" filter="url(#shadow)" />
+
+          <!-- Eyebrows -->
+          <path d="M 60 55 Q 75 50 88 58" fill="none" stroke="url(#hairGrad)" stroke-width="5" stroke-linecap="round" />
+          <path d="M 140 55 Q 125 50 112 58" fill="none" stroke="url(#hairGrad)" stroke-width="5" stroke-linecap="round" />
+
+          <!-- Nose -->
+          <path d="M 100 70 L 100 88 Q 100 92 105 92" fill="none" stroke="rgba(180,83,9,0.4)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+          <path d="M 95 90 Q 100 95 105 92" fill="none" stroke="rgba(180,83,9,0.3)" stroke-width="2" stroke-linecap="round" />
+
+          <!-- Glasses Frame -->
+          <rect x="56" y="60" width="38" height="28" rx="8" fill="rgba(255,255,255,0.15)" stroke="#1e293b" stroke-width="4" filter="url(#innerShadow)" />
+          <rect x="106" y="60" width="38" height="28" rx="8" fill="rgba(255,255,255,0.15)" stroke="#1e293b" stroke-width="4" filter="url(#innerShadow)" />
+          <!-- Glasses Bridge -->
+          <path d="M 94 70 Q 100 65 106 70" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round" />
+          <!-- Glasses Arms -->
+          <path d="M 56 70 Q 48 70 48 65" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round" />
+          <path d="M 144 70 Q 152 70 152 65" fill="none" stroke="#1e293b" stroke-width="4" stroke-linecap="round" />
+
+          <!-- Eyes Base (White part) -->
+          <circle cx="75" cy="74" r="10" fill="#ffffff" filter="url(#innerShadow)" />
+          <circle cx="125" cy="74" r="10" fill="#ffffff" filter="url(#innerShadow)" />
+          
+          <!-- Pupils (moving part inside the eye clip if needed, or simply drawn over) -->
+          <g id="pupil-l" transform="translate(0, 0)">
+            <circle cx="75" cy="74" r="5" fill="#020617" />
+            <circle cx="75" cy="74" r="5" fill="url(#hairGrad)" opacity="0.5" />
+            <circle cx="73" cy="72" r="1.5" fill="#ffffff" />
+          </g>
+          <g id="pupil-r" transform="translate(0, 0)">
+            <circle cx="125" cy="74" r="5" fill="#020617" />
+            <circle cx="125" cy="74" r="5" fill="url(#hairGrad)" opacity="0.5" />
+            <circle cx="123" cy="72" r="1.5" fill="#ffffff" />
+          </g>
+
+          <!-- Beautiful Smile -->
+          <path id="mouth" d="M 85 105 Q 100 118 115 105" fill="none" stroke="#78350f" stroke-width="2.5" stroke-linecap="round" />
+          <!-- Dimples -->
+          <path d="M 81 102 C 82 104, 84 105, 85 105" fill="none" stroke="rgba(180,83,9,0.5)" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M 119 102 C 118 104, 116 105, 115 105" fill="none" stroke="rgba(180,83,9,0.5)" stroke-width="1.5" stroke-linecap="round" />
+        </g>
+      </svg>
+    </div>
+
+    <div class="login-header">
+      <h2 class="login-title">Student Portal</h2>
+     
+    </div>
+
+    <form method="POST" class="login-form">
+      
+      <div class="form-group">
+        <label class="form-label" for="username">Enrollment Number</label>
+        <input type="text" class="form-input" id="username" name="username" placeholder="e.g. BTIT25O1001" required autocomplete="username">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" class="form-input" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="submit-btn" id="submitBtn">Secure Login</button>
+
+    </form>
+
+    <div class="links-container">
+      <a href="{{ url_for('auth_bp.forgot_password') }}" class="auth-link">Forgot Password?</a>
+      <a href="{{ url_for('auth_bp.faculty_login') }}" class="auth-link">Faculty Portal &rarr;</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// --- Avatar Interaction Logic ---
+const usernameInput = document.getElementById('username');
+const passwordInput = document.getElementById('password');
+const pupilL = document.getElementById('pupil-l');
+const pupilR = document.getElementById('pupil-r');
+const head = document.getElementById('head');
+const avatarContainer = document.querySelector('.avatar-container');
+const loginCard = document.getElementById('login-card');
+
+// Base centers for pupils (using the new eye coordinates)
+const baseL = { x: 75, y: 74 };
+const baseR = { x: 125, y: 74 };
+
+usernameInput.addEventListener('focus', () => {
+  avatarContainer.classList.remove('eyes-covered');
+});
+
+usernameInput.addEventListener('input', (e) => {
+  const val = e.target.value.length;
+  // Calculate movement looking left to right as typing happens
+  // Max width roughly 20 chars
+  const ratio = Math.min(val / 20, 1);
+  const moveX = (ratio * 10) - 5; // -5 to +5
+  const moveY = 2; // Look slightly down at the keyboard
+  
+  pupilL.style.transform = `translate(${moveX}px, ${moveY}px)`;
+  pupilR.style.transform = `translate(${moveX}px, ${moveY}px)`;
+  head.style.transform = `rotate(${moveX * 0.5}deg) translateY(2px)`;
+});
+
+usernameInput.addEventListener('blur', () => {
+  pupilL.style.transform = `translate(0px, 0px)`;
+  pupilR.style.transform = `translate(0px, 0px)`;
+  head.style.transform = `rotate(0deg) translateY(0px)`;
+});
+
+passwordInput.addEventListener('focus', () => {
+  // Makes the avatar look up/away slightly when password is focused
+  pupilL.style.transform = `translate(0px, -4px)`;
+  pupilR.style.transform = `translate(0px, -4px)`;
+  head.style.transform = `rotate(0deg) translateY(-4px)`;
+});
+
+passwordInput.addEventListener('blur', () => {
+  pupilL.style.transform = `translate(0px, 0px)`;
+  pupilR.style.transform = `translate(0px, 0px)`;
+  head.style.transform = `rotate(0deg) translateY(0px)`;
+});
+
+// Subtle 3D tilt effect on the card based on mouse movement
+document.addEventListener('mousemove', (e) => {
+  const xAxis = (window.innerWidth / 2 - e.pageX) / 40;
+  const yAxis = (window.innerHeight / 2 - e.pageY) / 40;
+  loginCard.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+  
+  // Also make avatar parallax slightly
+  if (!avatarContainer.classList.contains('eyes-covered') && document.activeElement !== usernameInput) {
+     const pX = (e.pageX - window.innerWidth / 2) / 60;
+     const pY = (e.pageY - window.innerHeight / 2) / 60;
+     
+     // Limit values
+     let clampedX = Math.max(-4, Math.min(4, pX));
+     let clampedY = Math.max(-4, Math.min(4, pY));
+     
+     pupilL.style.transform = `translate(${clampedX}px, ${clampedY}px)`;
+     pupilR.style.transform = `translate(${clampedX}px, ${clampedY}px)`;
+  }
+});
+
+// Reset rotation when mouse leaves window
+document.addEventListener('mouseleave', () => {
+  loginCard.style.transform = `rotateY(0deg) rotateX(0deg)`;
+  pupilL.style.transform = `translate(0px, 0px)`;
+  pupilR.style.transform = `translate(0px, 0px)`;
+});
+
+loginCard.addEventListener('mouseenter', () => {
+  loginCard.style.transition = 'none';
+});
+loginCard.addEventListener('mouseleave', () => {
+  loginCard.style.transition = 'transform 0.5s ease';
+});
+
+// --- Interactive Canvas Background ---
+const canvas = document.getElementById('bg-canvas');
+const ctx = canvas.getContext('2d');
+let particlesArray;
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+let mouse = {
+  x: null,
+  y: null,
+  radius: (canvas.height/80) * (canvas.width/80)
+}
+
+window.addEventListener('mousemove', (event) => {
+  mouse.x = event.x;
+  mouse.y = event.y;
+});
+
+class Particle {
+  constructor(x, y, directionX, directionY, size, color) {
+    this.x = x;
+    this.y = y;
+    this.directionX = directionX;
+    this.directionY = directionY;
+    this.size = size;
+    this.color = color;
+  }
+  draw() {
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+    ctx.fillStyle = '#3b82f6';
+    ctx.fill();
+  }
+  update() {
+    if (this.x > canvas.width || this.x < 0) {
+      this.directionX = -this.directionX;
+    }
+    if (this.y > canvas.height || this.y < 0) {
+      this.directionY = -this.directionY;
+    }
+
+    // Collision detection with mouse
+    let dx = mouse.x - this.x;
+    let dy = mouse.y - this.y;
+    let distance = Math.sqrt(dx*dx + dy*dy);
+    if (distance < mouse.radius + this.size){
+      if (mouse.x < this.x && this.x < canvas.width - this.size * 10) {
+        this.x += 10;
+      }
+      if (mouse.x > this.x && this.x > this.size * 10) {
+        this.x -= 10;
+      }
+      if (mouse.y < this.y && this.y < canvas.height - this.size * 10) {
+        this.y += 10;
+      }
+      if (mouse.y > this.y && this.y > this.size * 10) {
+        this.y -= 10;
+      }
+    }
+    
+    this.x += this.directionX;
+    this.y += this.directionY;
+    this.draw();
+  }
+}
+
+function init() {
+  particlesArray = [];
+  let numberOfParticles = (canvas.height * canvas.width) / 9000;
+  for (let i = 0; i < numberOfParticles; i++) {
+    let size = (Math.random() * 2) + 1;
+    let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+    let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+    let directionX = (Math.random() * 1) - 0.5;
+    let directionY = (Math.random() * 1) - 0.5;
+    let color = '#3b82f6';
+    particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+  }
+}
+
+function animate() {
+  requestAnimationFrame(animate);
+  ctx.clearRect(0, 0, innerWidth, innerHeight);
+
+  for (let i = 0; i < particlesArray.length; i++) {
+    particlesArray[i].update();
+  }
+  connect();
+}
+
+function connect() {
+  let opacityValue = 1;
+  for (let a = 0; a < particlesArray.length; a++) {
+    for (let b = a; b < particlesArray.length; b++) {
+      let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) + 
+                     ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                     
+      if (distance < (canvas.width/7) * (canvas.height/7)) {
+        opacityValue = 1 - (distance/20000);
+        ctx.strokeStyle = `rgba(59, 130, 246, ${opacityValue/3})`;
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+        ctx.stroke();
+      }
+    }
+  }
+}
+
+window.addEventListener('resize', () => {
+  canvas.width = innerWidth;
+  canvas.height = innerHeight;
+  mouse.radius = ((canvas.height/80) * (canvas.height/80));
+  init();
+});
+
+init();
+animate();
+</script>
+
+</body>
+</html>

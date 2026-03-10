@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Result Page</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
+    body{
+      background:linear-gradient(135deg,#0f172a,#1e293b);
+      color:white;
+      padding:30px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .result-box{
+      width: 100%;
+      max-width:700px;
+      padding:25px;
+      border-radius:20px;
+      background:rgba(255,255,255,0.1);
+      backdrop-filter:blur(10px);
+      box-shadow:0 0 25px rgba(0,0,0,0.5);
+      text-align:center;
+    }
+    h1{color:#38bdf8;margin-bottom:15px;}
+    .score{
+      font-size:50px;
+      font-weight:bold;
+      margin:15px 0;
+    }
+    .status{
+      font-size:20px;
+      font-weight:bold;
+      padding:10px 20px;
+      border-radius:12px;
+      display:inline-block;
+      margin-bottom:20px;
+    }
+    .btn{
+      padding:12px 18px;
+      border:none;
+      border-radius:10px;
+      background:#38bdf8;
+      font-weight:bold;
+      cursor:pointer;
+      margin:10px;
+      transition:0.3s;
+      text-decoration: none;
+      color: black;
+      display: inline-block;
+    }
+    .btn:hover{background:#0284c7;transform:scale(1.05);}
+    .details{
+      margin-top:20px;
+      text-align:left;
+      padding:20px;
+      border-radius:15px;
+      background:rgba(0,0,0,0.25);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .details p{margin:5px 0; font-size: 18px;}
+  </style>
+</head>
+<body>
+
+  <div class="result-box">
+    <h1>📊 Exam Result</h1>
+    <p>JEE Main - Mock Test</p>
+
+    <div class="score" id="scoreText">--</div>
+    <div class="status" id="statusBox">Pending</div>
+
+    <div class="details" id="details">
+      <p>Loading details...</p>
+    </div>
+
+    <!-- Corrected link to student_dashboard.html -->
+    <a href="student_dashboard.html" class="btn">🏠 Dashboard</a>
+    <button class="btn" onclick="window.print()">🖨 Print Result</button>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const dataStr = localStorage.getItem("examResult");
+        if(dataStr) {
+            const data = JSON.parse(dataStr);
+            console.log(data);
+            
+            // Score Display
+            // JEE Main usually is out of 300 (75 qs * 4). Here we have 30qs * 4 = 120 max.
+            document.getElementById("scoreText").innerText = `${data.score} / ${data.total * 4}`;
+
+            const statusBox = document.getElementById("statusBox");
+            if(data.percentage >= 40){
+                statusBox.style.background = "#22c55e"; // Green
+                statusBox.innerText = "✅ QUALIFIED";
+            } else {
+                statusBox.style.background = "#ef4444"; // Red
+                statusBox.innerText = "❌ NOT QUALIFIED";
+            }
+
+            document.getElementById("details").innerHTML = `
+                <p><b>Total Questions:</b> ${data.total}</p>
+                <p><b>Score:</b> ${data.score}</p>
+                <p><b>Correct Answers:</b> ${data.correct}</p>
+                <p><b>Wrong Answers:</b> ${data.wrong}</p>
+                <p><b>Unattempted:</b> ${data.unattempted}</p>
+                <p><b>Accuracy:</b> ${data.percentage}%</p>
+            `;
+        } else {
+            document.getElementById("details").innerHTML = "<p>No result data found. Please take the exam first.</p>";
+            document.getElementById("statusBox").style.display = "none";
+        }
+    });
+  </script>
+
+</body>
+</html>

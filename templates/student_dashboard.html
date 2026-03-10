@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Student Dashboard | Online Exam System</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --primary: #3b82f6; /* Blue 500 */
+        --primary-hover: #2563eb; /* Blue 600 */
+        --bg-dark: #0f172a; /* Slate 900 */
+        --bg-card: #1e293b; /* Slate 800 */
+        --text-main: #f8fafc; /* Slate 50 */
+        --text-muted: #94a3b8; /* Slate 400 */
+        --border: #334155; /* Slate 700 */
+        --danger: #ef4444; /* Red 500 */
+        --success: #22c55e; /* Green 500 */
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; font-family: 'Inter', sans-serif; }
+
+    body {
+        background-color: var(--bg-dark);
+        color: var(--text-main);
+        display: flex;
+        min-height: 100vh;
+        overflow-x: hidden;
+    }
+
+    /* Sidebar */
+    .sidebar {
+        width: 260px;
+        background-color: #111827; /* Gray 900 */
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        padding: 24px;
+        position: fixed;
+        height: 100vh;
+        z-index: 10;
+        transition: transform 0.3s ease;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 40px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid var(--border);
+    }
+    
+    .brand-icon {
+        width: 40px; 
+        height: 40px; 
+        background: linear-gradient(135deg, var(--primary), #8b5cf6);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+
+    .brand h2 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        letter-spacing: -0.025em;
+    }
+
+    .nav-menu {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        flex: 1;
+    }
+
+    .nav-link {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        color: var(--text-muted);
+        text-decoration: none;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.2s;
+    }
+
+    .nav-link:hover, .nav-link.active {
+        background-color: rgba(59, 130, 246, 0.1);
+        color: var(--primary);
+    }
+
+    .nav-link svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    .user-mini {
+        margin-top: auto;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .avatar {
+        width: 36px;
+        height: 36px;
+        background-color: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
+    .user-info {
+        flex: 1;
+        overflow: hidden;
+    }
+    
+    .user-info h4 { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .user-info span { font-size: 0.75rem; color: var(--text-muted); }
+
+    .logout-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .logout-btn:hover { color: var(--danger); }
+
+
+    /* Main Content */
+    .main-content {
+        flex: 1;
+        margin-left: 260px; /* Sidebar width */
+        padding: 40px;
+        width: calc(100% - 260px);
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+    }
+
+    .header h1 {
+        font-size: 2rem;
+        font-weight: 700;
+    }
+    
+    .header p {
+        color: var(--text-muted);
+        margin-top: 5px;
+    }
+
+    /* Grid Layout */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 24px;
+    }
+
+    /* Cards */
+    .card {
+        background-color: var(--bg-card);
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .info-card {
+        grid-column: span 12;
+    }
+    
+    @media (min-width: 1024px) {
+        .info-card { grid-column: span 4; }
+        .courses-card { grid-column: span 8; }
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .card-title svg { opacity: 0.7; }
+
+    /* Student Info List */
+    .info-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .info-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-bottom: 12px;
+        border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    
+    .info-item:last-child { border-bottom: none; }
+    .info-label { color: var(--text-muted); font-size: 0.9rem; }
+    .info-value { font-weight: 500; }
+
+    /* Course List */
+    .course-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+
+    .course-item {
+        background-color: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: transform 0.2s, background-color 0.2s;
+    }
+
+    .course-item:hover {
+        background-color: rgba(255,255,255,0.06);
+        transform: translateY(-2px);
+    }
+
+    .course-info h3 {
+        font-size: 1rem;
+        font-weight: 600;
+        margin-bottom: 4px;
+    }
+    
+    .course-info span {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .start-btn {
+        background-color: var(--primary);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .start-btn:hover {
+        background-color: var(--primary-hover);
+        box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    /* Stats Wrapper */
+    .stats-container {
+        grid-column: span 12;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 24px;
+        margin-bottom: 24px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, var(--bg-card), rgba(30, 41, 59, 0.5));
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 20px;
+    }
+
+    .stat-value { font-size: 2rem; font-weight: 700; margin-bottom: 4px; }
+    .stat-label { color: var(--text-muted); font-size: 0.9rem; }
+    
+    .text-primary { color: var(--primary); }
+    .text-success { color: var(--success); }
+    .text-warning { color: #f59e0b; }
+
+</style>
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="brand">
+        <div class="brand-icon">🎓</div>
+        <h2>ExamPortal</h2>
+    </div>
+
+    <nav class="nav-menu">
+        <a href="{{ url_for('student_bp.student_dashboard') }}" class="nav-link active">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+            Dashboard
+        </a>
+        <a href="{{ url_for('student_bp.student_exams') }}" class="nav-link">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            My Exams
+        </a>
+        <a href="#" class="nav-link">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>
+            Performance
+        </a>
+    </nav>
+
+    <div class="user-mini">
+        <div class="avatar">{{ student.full_name[0] }}</div>
+        <div class="user-info">
+            <h4>{{ student.full_name }}</h4>
+            <span>{{ student.enrollment_no }}</span>
+        </div>
+        <a href="{{ url_for('auth_bp.logout') }}" class="logout-btn" title="Logout">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+        </a>
+    </div>
+</aside>
+
+<!-- Main Area -->
+<main class="main-content">
+    <div class="header">
+        <div>
+            <h1>Dashboard</h1>
+            <p>Welcome back, {{ student.full_name }}!</p>
+        </div>
+        <div style="text-align: right;">
+            <span style="background: rgba(34, 197, 94, 0.2); color: var(--success); padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;">Active Student</span>
+        </div>
+    </div>
+
+    <div class="dashboard-grid">
+        
+        <!-- Stats Row -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-value text-primary">{{ total_exams }}</div>
+                <div class="stat-label">Total Assigned Exams</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value text-success">{{ completed_exams }}</div>
+                <div class="stat-label">Completed Exams</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value text-warning">{{ upcoming_exams }}</div>
+                <div class="stat-label">Upcoming Exams</div>
+            </div>
+        </div>
+
+        <!-- Student Profile Card -->
+        <div class="card info-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                     Profile Details
+                </div>
+            </div>
+            <ul class="info-list">
+                <li class="info-item">
+                    <span class="info-label">Full Name</span>
+                    <span class="info-value">{{ student.full_name }}</span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label">Enrollment No</span>
+                    <span class="info-value">{{ student.enrollment_no }}</span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label">Branch</span>
+                    <span class="info-value">{{ student.branch }}</span>
+                </li>
+                <li class="info-item">
+                    <span class="info-label">Semester</span>
+                    <span class="info-value">{{ student.semester }}</span>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Enrolled Courses Card -->
+        <div class="card courses-card">
+            <div class="card-header">
+                <div class="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" /></svg>
+                    Enrolled Courses
+                </div>
+            </div>
+            
+            <div class="course-list">
+                {% for subject in subjects %}
+                <div class="course-item">
+                    <div class="course-info">
+                        <h3>{{ subject.subject_name }}</h3>
+                        <span>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                            Faculty: {{ subject.faculty_name }}
+                        </span>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% if not subjects %}
+                <div style="text-align: center; color: var(--text-muted); padding: 20px;">
+                    No enrolled courses found.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</main>
+
+<script>
+  function startExam(subjectName) {
+    if(confirm("Are you sure you want to start the exam for " + subjectName + "?")) {
+      // Create a mock user if template variable is missing for some reason in local preview
+      const studentName = "{{ student.full_name }}" || "Student"; 
+      localStorage.setItem("studentName", studentName);
+      localStorage.setItem("examSubject", subjectName);
+      window.location.href = "{{ url_for('student_bp.exam_page') }}";
+    }
+  }
+</script>
+
+</body>
+</html>
