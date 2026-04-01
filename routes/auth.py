@@ -20,8 +20,11 @@ MAIL_FROM     = "Online Exam Portal <ayush2005baghel@gmail.com>"
 # ================= STUDENT LOGIN =================
 @auth_bp.route("/student/login", methods=["GET", "POST"])
 def student_login():
-    if session.get("user_id") and session.get("role") == "student":
-        return redirect(url_for("student_bp.student_dashboard"))
+    if session.get("user_id"):
+        if session.get("role") == "student":
+            return redirect(url_for("student_bp.student_dashboard"))
+        elif session.get("role") == "faculty":
+            return redirect(url_for("faculty_bp.faculty_dashboard"))
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
@@ -47,8 +50,11 @@ def student_login():
 # ================= TEACHER LOGIN =================
 @auth_bp.route("/faculty/login", methods=["GET", "POST"])
 def faculty_login():
-    if session.get("user_id") and session.get("role") == "faculty":
-        return redirect(url_for("faculty_bp.faculty_dashboard"))
+    if session.get("user_id"):
+        if session.get("role") == "faculty":
+            return redirect(url_for("faculty_bp.faculty_dashboard"))
+        elif session.get("role") == "student":
+            return redirect(url_for("student_bp.student_dashboard"))
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()

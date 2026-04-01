@@ -375,82 +375,96 @@
 <script id="server-questions-data" type="application/json">
     {{ questions | tojson }}
 </script>
+<script id="exam-config" type="application/json">
+{
+    "courseCode": {{ (exam.course_code if exam else None) | tojson }},
+    "subjectName": {{ subject_name | tojson }},
+    "totalTime": {{ (exam.duration_minutes * 60 if exam and exam.duration_minutes else 10800) | tojson }}
+}
+</script>
 <script>
-    // --- Mock Data ---
-    const totalTime = 3 * 60 * 60; // 3 hours in seconds
-    let examQuestions = []; 
+    const examConfig = JSON.parse(document.getElementById('exam-config').textContent);
+    const courseCode = examConfig.courseCode;
+    const subjectNameServer = examConfig.subjectName;
+    const totalTime = examConfig.totalTime;
+    let timeLeft = totalTime;
+    let timerInterval;
+    let currentSection = 'A';
+    let currentQIndex = 0;
+    let examQuestions = [];  
+    let tabSwitchCount = 0;
+    const MAX_TAB_SWITCHES = 2;
     
-    // --- Server Side Data Injection ---
-    // We are receiving 'questions' from Flask
-    // Format: [{id, question_text, options: [{id, option_text}, ...]}, ...]
+    // Server Questions from data tag
+    const serverQuestionsData = document.getElementById('server-questions-data');
+    const serverQuestions = serverQuestionsData ? JSON.parse(serverQuestionsData.textContent) : [];
     
-    const serverQuestions = JSON.parse(document.getElementById('server-questions-data').textContent);
-    
-    // Transform to our UI format
     if (serverQuestions && serverQuestions.length > 0) {
         serverQuestions.forEach((q, index) => {
-            // Determine Section based on index (Simple logic for now: 1-10 A, 11-20 B, 21+ C)
-            // Or use DB 'section' field if available (not currently in DB schema, so deriving it)
             let i = index + 1;
-            let sec = 'A';
-            if(i > 15 && i <= 25) sec = 'B';
-            if(i > 25) sec = 'C';
-
+            let sec = q.section || 'A';
+            
             examQuestions.push({
+                idx: index,
                 id: i,
-                db_id: q.id, // Keep reference to DB ID
+                db_id: q.id,
                 section: sec,
-                text: `[Section ${sec}] ${q.question_text}`,
-                options: q.options.map(o => o.option_text),
-                optionIds: q.options.map(o => o.id), // Keep reference to Option IDs
-                status: 0, // Not Visited
-                selectedOption: null 
-            });
-        });
-    } else {
-        // Fallback or Empty State
-        console.log("No questions from server, or empty list.");
-        // Optional: Keep mock data for dev testing if DB is empty
-        for(let i=1; i<=30; i++) {
-            let sec = 'A';
-            if(i > 15 && i <= 25) sec = 'B';
-            if(i > 25) sec = 'C';
-
-            examQuestions.push({
-                id: i,
-                section: sec,
-                text: `[Section ${sec}] Question ${i}: Mock Question (DB Empty). What is correct?`,
-                options: [`Option 1`, `Option 2`, `Option 3`, `Option 4`],
+                text: q.question_text,
+                options: q.options ? q.options.map(o => o.option_text) : [],
+                optionIds: q.options ? q.options.map(o => o.id) : [],
+                isCorrects: q.options ? q.options.map(o => o.is_correct) : [],
+                marks: q.marks || 4,
+                negative_marks: q.negative_marks || 0,
                 status: 0, 
                 selectedOption: null 
             });
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        startTimer();
+        const subject = subjectNameServer || localStorage.getItem("examSubject") || "Mock Test";
+        document.querySelector(".exam-title").innerText = `${subject}`;
+        
+        const name = localStorage.getItem("studentName") || "Candidate";
+        document.getElementById("candidateName").innerText = name;
+        document.getElementById("sidebarName").innerText = name;
+        
+        switchSection('A');
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+    });
+
+    function handleVisibilityChange() {
+        if (document.hidden) {
+            tabSwitchCount++;
+            if (tabSwitchCount >= MAX_TAB_SWITCHES) {
+                alert("You have violated the exam rules by switching tabs. Disqualifying.");
+                blacklistUser();
+            } else {
+                alert(`Warning! Tab switch detected. Warnings left: ${MAX_TAB_SWITCHES - tabSwitchCount}`);
+            }
         }
     }
 
-    // --- Initialization ---
-    document.addEventListener('DOMContentLoaded', () => {
-        // Init Timer
-        startTimer();
-        
-        // Load Subject Name
-        const subject = "{{ subject_name }}" || localStorage.getItem("examSubject") || "Mock Test";
-        document.querySelector(".exam-title").innerText = ` ${subject}`; // Update Header
-
-        // Load First Question of Section A
-        switchSection('A');
-        
-        // Load User Name
-        const name = localStorage.getItem("studentName") || "Unknown Candidate";
-        document.getElementById("candidateName").innerText = name;
-        document.getElementById("sidebarName").innerText = name;
-    });
+    function blacklistUser() {
+        clearInterval(timerInterval);
+        fetch("{{ url_for('student_bp.blacklist_student') }}", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ course_code: courseCode })
+        }).then(() => {
+            window.location.href = "{{ url_for('student_bp.student_dashboard') }}";
+        }).catch(() => {
+            window.location.href = "{{ url_for('student_bp.student_dashboard') }}";
+        });
+    }
 
     function startTimer() {
         const timerEl = document.getElementById("timer");
         timerInterval = setInterval(() => {
             if(timeLeft <= 0) {
                 clearInterval(timerInterval);
-                submitExam();
+                submitExam(true); // Auto-submit without confirm
                 return;
             }
             timeLeft--;
@@ -470,53 +484,45 @@
     function switchSection(sec) {
         currentSection = sec;
         
-        // Update Tabs UI
         ['A', 'B', 'C'].forEach(s => {
             const btn = document.getElementById(`btnSec${s}`);
-            if(s === sec) {
-                btn.classList.remove('btn-default');
-                btn.classList.add('btn-primary');
-            } else {
-                btn.classList.remove('btn-primary');
-                btn.classList.add('btn-default');
-            }
+            btn.classList.toggle('btn-primary', s === sec);
+            btn.classList.toggle('btn-default', s !== sec);
         });
         
-        // Find first question of this section
         const firstQ = examQuestions.find(q => q.section === sec);
         if(firstQ) {
             loadQuestion(examQuestions.indexOf(firstQ));
+        } else {
+            // No questions in this section
+            document.getElementById("qNo").innerText = "-";
+            document.getElementById("qtext").innerText = "No questions in this section.";
+            document.getElementById("options").innerHTML = "";
+            renderPalette();
         }
-        
-        document.getElementById("currentSectionDisplay").innerText = sec;
-        renderPalette();
     }
 
     function loadQuestion(index) {
-        if(index < 0 || index >= examQuestions.length) return;
+        const optionsDiv = document.getElementById("options");
+        if(index < 0 || index >= examQuestions.length) {
+            optionsDiv.innerHTML = "";
+            return;
+        }
         
-        // Check if question belongs to current section, if not switch section?
-        // Actually, navigation should stick to section or allow jump. 
-        // If jumping via palette, we might need to update section tab.
         const targetQ = examQuestions[index];
         if(targetQ.section !== currentSection) {
             currentSection = targetQ.section;
-            switchSection(currentSection); // This will call loadQuestion again recursively effectively, so return
+            switchSection(currentSection);
             return; 
         }
 
         currentQIndex = index;
         const q = examQuestions[index];
-        
-        // Update status to Not Answered if it was Not Visited
-        if(q.status === 0) {
-            q.status = 1; 
-        }
+        if(q.status === 0) q.status = 1; 
         
         document.getElementById("qNo").innerText = q.id;
-        document.getElementById("qtext").innerText = q.text;
+        document.getElementById("qtext").innerText = `[Section ${q.section}] ${q.text}`;
         
-        const optionsDiv = document.getElementById("options");
         optionsDiv.innerHTML = "";
         
         q.options.forEach((opt, idx) => {
@@ -625,24 +631,24 @@
         });
     }
 
-    function submitExam() {
-        if(confirm("Are you sure you want to submit the exam?")) {
+    function submitExam(isAuto = false) {
+        if(isAuto || confirm("Are you sure you want to submit the exam?")) {
             clearInterval(timerInterval);
-            // Calculate Result
             let score = 0;
             let correct = 0;
             let wrong = 0;
             let unattempted = 0;
             
-            // Mock correct answer: let's say option 0 is always correct for demo
-            // In real app, you'd compare with actual answer key
             examQuestions.forEach(q => {
-                if (q.selectedOption === 0) {
-                    score += 4;
-                    correct++;
-                } else if (q.selectedOption !== null) {
-                    score -= 1;
-                    wrong++;
+                if (q.selectedOption !== null) {
+                    const isCorrect = q.isCorrects[q.selectedOption];
+                    if (isCorrect === 1) {
+                        score += q.marks;
+                        correct++;
+                    } else {
+                        score -= q.negative_marks;
+                        wrong++;
+                    }
                 } else {
                     unattempted++;
                 }
@@ -654,13 +660,22 @@
                 correct: correct,
                 wrong: wrong,
                 unattempted: unattempted,
-                percentage: Math.round((correct / examQuestions.length) * 100)
+                percentage: examQuestions.length > 0 ? Math.round((correct / examQuestions.length) * 100) : 0
             };
-            
             localStorage.setItem("examResult", JSON.stringify(resultData));
             
-            alert(`Exam Submitted! \nScore: ${score}`);
-            window.location.href = "result.html"; // Redirect to result page
+            fetch("{{ url_for('student_bp.submit_exam') }}", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ course_code: courseCode, score: score })
+            }).then(res => res.json()).then(data => {
+                alert(`Exam Submitted! \nScore: ${score}`);
+                window.location.href = "{{ url_for('student_bp.result_page') }}";
+            }).catch(err => {
+                console.error(err);
+                alert(`Exam Submitted! \nScore: ${score} (But failed to save to server)`);
+                window.location.href = "{{ url_for('student_bp.result_page') }}";
+            });
         }
     }
 </script>

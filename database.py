@@ -22,6 +22,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT UNIQUE NOT NULL,
             password TEXT NOT NULL,
+            email TEXT UNIQUE,
             role TEXT NOT NULL CHECK(role IN ('student','faculty'))
         )
     """)
@@ -29,10 +30,9 @@ def init_db():
     # ================= STUDENT DETAILS =================
     conn.execute("""
         CREATE TABLE IF NOT EXISTS student_details (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            enrollment_no TEXT PRIMARY KEY,
             user_id INTEGER UNIQUE NOT NULL,
             full_name TEXT NOT NULL,
-            enrollment_no TEXT UNIQUE NOT NULL,
             branch TEXT,
             semester INTEGER,
             FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
@@ -45,8 +45,10 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER UNIQUE NOT NULL,
             full_name TEXT NOT NULL,
-            department TEXT,
-            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE
+            department TEXT UNIQUE,
+            course_code TEXT,
+            FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE CASCADE,
+            FOREIGN KEY(course_code) REFERENCES exams(course_code) ON DELETE SET NULL
         )
     """)
 
@@ -54,6 +56,7 @@ def init_db():
     conn.execute("""
         CREATE TABLE IF NOT EXISTS subjects (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subject_code TEXT UNIQUE,
             subject_name TEXT NOT NULL,
             branch TEXT NOT NULL,
             semester INTEGER NOT NULL,
@@ -64,16 +67,15 @@ def init_db():
         )
     """)
 
-    # ================= STUDENT - SUBJECT MAPPING =================
+    # ================= STUDENT - COURSE ENROLLMENT =================
     conn.execute("""
         CREATE TABLE IF NOT EXISTS student_subjects (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            student_id INTEGER NOT NULL,
-            subject_id INTEGER NOT NULL,
-            UNIQUE(student_id, subject_id),
-            FOREIGN KEY(student_id) REFERENCES student_details(id) 
+            enrollment_no TEXT NOT NULL,
+            course_code TEXT NOT NULL,
+            PRIMARY KEY(enrollment_no, course_code),
+            FOREIGN KEY(enrollment_no) REFERENCES student_details(enrollment_no) 
             ON DELETE CASCADE,
-            FOREIGN KEY(subject_id) REFERENCES subjects(id) 
+            FOREIGN KEY(course_code) REFERENCES exams(course_code) 
             ON DELETE CASCADE
         )
     """)
@@ -81,13 +83,16 @@ def init_db():
     # ================= EXAMS =================
     conn.execute("""
         CREATE TABLE IF NOT EXISTS exams (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            course_code TEXT PRIMARY KEY,
             subject_id INTEGER NOT NULL,
             exam_name TEXT NOT NULL,
             exam_date TEXT,
+            start_time TEXT,
+            end_time TEXT,
             total_marks INTEGER,
             duration_minutes INTEGER,
             pass_percentage INTEGER DEFAULT 40,
+            UNIQUE(exam_date, start_time),
             FOREIGN KEY(subject_id) REFERENCES subjects(id) 
             ON DELETE CASCADE
         )
@@ -97,13 +102,14 @@ def init_db():
     conn.execute("""
         CREATE TABLE IF NOT EXISTS exam_attempts (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            student_id INTEGER NOT NULL,
-            exam_id INTEGER NOT NULL,
+            enrollment_no TEXT NOT NULL,
+            course_code TEXT NOT NULL,
             score INTEGER,
             completed INTEGER DEFAULT 0,
-            FOREIGN KEY(student_id) REFERENCES student_details(id) 
+            attempt_time TEXT,
+            FOREIGN KEY(enrollment_no) REFERENCES student_details(enrollment_no) 
             ON DELETE CASCADE,
-            FOREIGN KEY(exam_id) REFERENCES exams(id) 
+            FOREIGN KEY(course_code) REFERENCES exams(course_code) 
             ON DELETE CASCADE
         )
     """)
@@ -133,6 +139,31 @@ def init_db():
             is_correct INTEGER DEFAULT 0,
             FOREIGN KEY(question_id) REFERENCES questions(id)
             ON DELETE CASCADE
+        )
+    ''')
+
+    # ================= EXAM QUESTIONS =================
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS exam_questions (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            course_code TEXT NOT NULL,
+            question_id INTEGER NOT NULL,
+            section TEXT DEFAULT 'A',
+            UNIQUE(course_code, question_id),
+            FOREIGN KEY(course_code) REFERENCES exams(course_code) ON DELETE CASCADE,
+            FOREIGN KEY(question_id) REFERENCES questions(id) ON DELETE CASCADE
+        )
+    ''')
+
+    # ================= EXAM BLACKLIST =================
+    conn.execute('''
+        CREATE TABLE IF NOT EXISTS exam_blacklist (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            course_code TEXT NOT NULL,
+            enrollment_no TEXT NOT NULL,
+            UNIQUE(course_code, enrollment_no),
+            FOREIGN KEY(course_code) REFERENCES exams(course_code) ON DELETE CASCADE,
+            FOREIGN KEY(enrollment_no) REFERENCES student_details(enrollment_no) ON DELETE CASCADE
         )
     ''')
 
@@ -198,3 +229,15 @@ def update_user_password(user_id, new_password):
     """, (generate_password_hash(new_password), user_id))
     conn.commit()
     conn.close()
+
+
+# ================= GET STUDENTS BY COURSE =================
+def get_students_by_course(course_code):
+    conn = get_connection()
+    students = conn.execute("""
+        SELECT sd.* FROM student_details sd
+        JOIN student_subjects ss ON sd.enrollment_no = ss.enrollment_no
+        WHERE ss.course_code = ?
+    """, (course_code,)).fetchall()
+    conn.close()
+    return students

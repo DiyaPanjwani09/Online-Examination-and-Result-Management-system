@@ -40,15 +40,45 @@ body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--txt);disp
 
 /* Main */
 .wrap{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;position:relative;z-index:10;overflow:hidden}
-.topbar{height:var(--topbar);background:rgba(3,7,18,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+/* Topbar */
+.topbar{height:var(--topbar);background:rgba(3,7,18,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .topbar-l h1{font-size:17px;font-weight:700}
 .topbar-l h1 span{background:linear-gradient(90deg,#a5b4fc,#67e8f9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .topbar-l p{font-size:11.5px;color:var(--txt2);margin-top:1px}
-.topbar-r{display:flex;align-items:center;gap:10px}
-.breadcrumb{padding:14px 36px 0;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt3)}
+
+/* Breadcrumb */
+.breadcrumb{padding:14px 20px 0;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt3)}
 .breadcrumb span{color:var(--txt2)}
-.breadcrumb svg{width:12px;height:12px}
-.content{padding:20px 36px 40px;overflow-y:auto;height:calc(100vh - var(--topbar))}
+.breadcrumb svg{width:12px;height:12px;flex-shrink:0}
+
+.content{padding:20px 20px 40px;overflow-y:auto;height:calc(100vh - var(--topbar))}
+
+/* Mobile Menu Btn */
+.mobile-menu-btn{display:none;width:38px;height:38px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);align-items:center;justify-content:center;color:var(--txt);cursor:pointer;margin-right:12px}
+.mobile-menu-btn svg{width:20px;height:20px}
+
+@media (max-width: 1100px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .charts-row { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 900px) {
+  :root { --sidebar: 0px; }
+  .sidebar { transform: translateX(-100%); transition: transform .3s; z-index: 1000; }
+  .sidebar.active { transform: translateX(0); }
+  .wrap { margin-left: 0; }
+  .topbar { padding: 0 20px; }
+  .breadcrumb { padding: 14px 20px 0; }
+  .content { padding: 20px 20px 40px; }
+  .mobile-menu-btn { display: flex; }
+}
+
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .topbar-l h1 { font-size: 15px; }
+  .stat-val { font-size: 22px; }
+}
+
 
 /* Stat cards */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:22px}
@@ -189,8 +219,15 @@ body{overflow-x:hidden;overflow-y:hidden}
     <a href="{{ url_for('faculty_bp.faculty_exams') }}" class="nav-a">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Exams
     </a>
+    <a href="{{ url_for('faculty_analysis_bp.faculty_analysis') }}" class="nav-a">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83M22 12A10 10 0 0 0 12 2v10z"/></svg>Performance Analysis
+    </a>
     <a href="{{ url_for('faculty_bp.faculty_results') }}" class="nav-a on">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Results & Analytics
+    </a>
+    <a href="{{ url_for('faculty_analysis_bp.faculty_powerbi') }}" class="nav-a">
+      <svg style="color:#f2c811" viewBox="0 0 24 24" fill="currentColor"><path d="M11.5 9H15V22H11.5V9ZM19 13H22.5V22H19V13ZM4 16H7.5V22H4V16Z"/></svg>
+      Power BI Analytics
     </a>
   </nav>
   <div class="sidebar-div"></div>
@@ -206,10 +243,16 @@ body{overflow-x:hidden;overflow-y:hidden}
 
 <div class="wrap">
   <header class="topbar">
-    <div class="topbar-l">
-      <h1>Results & <span>Analytics</span></h1>
-      <p>Class performance overview — Blackboard-style grade center</p>
+    <div class="topbar-l" style="display:flex;align-items:center">
+      <button class="mobile-menu-btn" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div>
+        <h1>Results & <span>Analytics</span></h1>
+        <p>Class performance overview</p>
+      </div>
     </div>
+
     <div class="topbar-r">
       <a href="{{ url_for('faculty_bp.export_results_csv') }}" class="btn btn-success">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -333,17 +376,19 @@ body{overflow-x:hidden;overflow-y:hidden}
           {% endif %}{% endfor %}
         </select>
       </div>
-      {% if results %}
-      <table class="rtable" id="rTable">
-        <thead>
-          <tr>
-            <th>#</th>
+      <div style="overflow-x:auto; width:100%">
+        <table class="rtable" id="rTable">
+          <thead>
+            <tr>
+              <th>#</th>
+
             <th>Student</th>
             <th>Exam</th>
             <th>Subject</th>
             <th>Score</th>
             <th>Percentage</th>
             <th>Grade</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody id="rBody">
@@ -364,9 +409,10 @@ body{overflow-x:hidden;overflow-y:hidden}
             </td>
             <td style="font-weight:700;font-size:14px">{{ r.score }}<span style="font-weight:400;font-size:11px;color:var(--txt2)">/{{ r.total_marks }}</span></td>
             <td>
+              {% set bar_color = '#34d399' if pct >= 75 else '#a5b4fc' if pct >= 40 else '#f87171' %}
               <div style="display:flex;align-items:center;gap:9px">
                 <div style="width:60px;height:5px;background:var(--dark3);border-radius:10px;overflow:hidden">
-                  <div style="width:{{ pct }}%;height:100%;background:{% if pct >= 75 %}#34d399{% elif pct >= 40 %}#a5b4fc{% else %}#f87171{% endif %};border-radius:10px"></div>
+                  <div data-width="{{ pct }}" data-bg="{{ bar_color }}" style="height:100%; border-radius:10px;"></div>
                 </div>
                 <span style="font-weight:600;font-size:13px">{{ pct }}%</span>
               </div>
@@ -380,11 +426,19 @@ body{overflow-x:hidden;overflow-y:hidden}
               <span class="rbadge rb-fa">Failed</span>
               {% endif %}
             </td>
+            <td>
+              <a href="{{ url_for('faculty_analysis_bp.faculty_exam_report', course_code=r.course_code) }}" class="btn-back" style="padding:6px 12px;font-size:12px;display:inline-flex;align-items:center;gap:6px;background:rgba(99,102,241,0.1);border-color:rgba(99,102,241,0.2);color:#a5b4fc">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                Analysis Report
+              </a>
+            </td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
+      </div>
       {% else %}
+
       <div class="empty">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
         <p>No results yet. Create exams and have students attempt them.</p>
@@ -395,81 +449,97 @@ body{overflow-x:hidden;overflow-y:hidden}
   </main>
 </div>
 
-<script>
-// Bar chart — top 10 students by score %
-{% if results %}
-(()=>{
-  const allResults = [
-    {% for r in results %}
-    {name:"{{ r.full_name }}", pct:{{ r.pct or 0 }}, exam:"{{ r.exam_name }}"},
-    {% endfor %}
-  ];
-  // Build score buckets: 0-10, 11-20, ..., 91-100
-  const buckets = Array(10).fill(0);
-  const labels = ['0–10','11–20','21–30','31–40','41–50','51–60','61–70','71–80','81–90','91–100'];
-  allResults.forEach(r=>{
-    const idx = Math.min(Math.floor(r.pct/10), 9);
-    buckets[idx]++;
-  });
-  const colors = labels.map((l,i)=>i<4?'rgba(248,113,113,.75)':i<8?'rgba(165,180,252,.75)':'rgba(52,211,153,.75)');
-  const ctx=document.getElementById('barChart').getContext('2d');
-  new Chart(ctx,{
-    type:'bar',
-    data:{
-      labels,
-      datasets:[{
-        label:'Students',
-        data:buckets,
-        backgroundColor:colors,
-        borderColor:colors.map(c=>c.replace('.75','.9')),
-        borderWidth:1,
-        borderRadius:6,
-        borderSkipped:false
-      }]
-    },
-    options:{
-      responsive:true,
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:c=>`${c.raw} student${c.raw!==1?'s':''}`}}
-      },
-      scales:{
-        x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6b7280',font:{size:11}}},
-        y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#6b7280',font:{size:11},stepSize:1,precision:0}}
-      }
-    }
-  });
-})();
+<script id="results-data" type="application/json">
+  {{ results | tojson }}
+</script>
+<script id="score-dist" type="application/json">
+  {{ score_dist | tojson }}
+</script>
 
-// Donut chart
-(()=>{
-  const ctx=document.getElementById('donutChart').getContext('2d');
-  new Chart(ctx,{
-    type:'doughnut',
-    data:{
-      labels:['Excellent (≥75%)','Passed (40–75%)','Failed (<40%)'],
-      datasets:[{
-        data:[{{ score_dist.excellent }},{{ score_dist.passed }},{{ score_dist.failed }}],
-        backgroundColor:['rgba(52,211,153,.8)','rgba(165,180,252,.8)','rgba(248,113,113,.8)'],
-        borderColor:['#34d399','#a5b4fc','#f87171'],
-        borderWidth:1.5,
-        hoverOffset:8
-      }]
-    },
-    options:{
-      responsive:true,
-      cutout:'65%',
-      plugins:{
-        legend:{display:false},
-        tooltip:{callbacks:{label:c=>{
-          const total=c.dataset.data.reduce((a,b)=>a+b,0);
-          return ` ${c.raw} (${Math.round(c.raw/total*100)}%)`;
-        }}}
+<script>
+// Results and Analytics Initialization
+(function() {
+  const resultsNode = document.getElementById('results-data');
+  const distNode = document.getElementById('score-dist');
+  
+  if (!resultsNode || !distNode) return;
+  
+  const allResults = JSON.parse(resultsNode.textContent || '[]');
+  const scoreDist = JSON.parse(distNode.textContent || '{}');
+  
+  if (allResults.length === 0) return;
+
+  // Bar Chart — Score Distribution
+  (function() {
+    const buckets = Array(10).fill(0);
+    const labels = ['0–10','11–20','21–30','31–40','41–50','51–60','61–70','71–80','81–90','91–100'];
+    allResults.forEach(r => {
+      const idx = Math.min(Math.floor((r.pct || 0) / 10), 9);
+      buckets[idx]++;
+    });
+    const colors = labels.map((l,i) => i < 4 ? 'rgba(248,113,113,.75)' : i < 8 ? 'rgba(165,180,252,.75)' : 'rgba(52,211,153,.75)');
+    const canvas = document.getElementById('barChart');
+    if (!canvas) return;
+    
+    new Chart(canvas.getContext('2d'), {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'Students',
+          data: buckets,
+          backgroundColor: colors,
+          borderColor: colors.map(c => c.replace('.75', '.9')),
+          borderWidth: 1,
+          borderRadius: 6,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => `${c.raw} student${c.raw !== 1 ? 's' : ''}` } }
+        },
+        scales: {
+          x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#6b7280', font: { size: 11 } } },
+          y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#6b7280', font: { size: 11 }, stepSize: 1, precision: 0 } }
+        }
       }
-    }
-  });
+    });
+  })();
+
+  // Doughnut Chart — Grade Breakdown
+  (function() {
+    const canvas = document.getElementById('donutChart');
+    if (!canvas) return;
+    
+    new Chart(canvas.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Excellent (≥75%)', 'Passed (40–75%)', 'Failed (<40%)'],
+        datasets: [{
+          data: [scoreDist.excellent || 0, scoreDist.passed || 0, scoreDist.failed || 0],
+          backgroundColor: ['rgba(52,211,153,.8)', 'rgba(165,180,252,.8)', 'rgba(248,113,113,.8)'],
+          borderColor: ['#34d399', '#a5b4fc', '#f87171'],
+          borderWidth: 1.5,
+          hoverOffset: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        cutout: '65%',
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: c => {
+            const total = c.dataset.data.reduce((a, b) => a + b, 0);
+            return ` ${c.raw} (${total > 0 ? Math.round(c.raw / total * 100) : 0}%)`;
+          }}}
+        }
+      }
+    });
+  })();
 })();
-{% endif %}
 
 // Table filter
 function filterTable(){
@@ -492,6 +562,25 @@ document.addEventListener('keydown',e=>{
     document.getElementById('srch').focus();
   }
 });
+
+// Dynamic styles helper
+document.querySelectorAll('[data-width]').forEach(el => el.style.width = el.dataset.width + '%');
+document.querySelectorAll('[data-bg]').forEach(el => el.style.background = el.dataset.bg);
+// Mobile Sidebar Toggle
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  sb.classList.toggle('active');
+  let overlay = document.querySelector('.sb-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'sb-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900;backdrop-filter:blur(4px);display:none';
+    document.body.appendChild(overlay);
+    overlay.onclick = toggleSidebar;
+  }
+  overlay.style.display = sb.classList.contains('active') ? 'block' : 'none';
+}
 </script>
 </body>
 </html>
+

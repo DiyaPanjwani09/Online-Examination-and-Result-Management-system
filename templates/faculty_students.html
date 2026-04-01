@@ -39,14 +39,18 @@ body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--txt);disp
 
 /* Main */
 .wrap{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;position:relative;z-index:10;overflow:hidden}
+/* Topbar */
 .topbar{height:var(--topbar);background:rgba(3,7,18,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .topbar-l h1{font-size:17px;font-weight:700}
 .topbar-l h1 span{background:linear-gradient(90deg,#a5b4fc,#67e8f9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .topbar-l p{font-size:11.5px;color:var(--txt2);margin-top:1px}
 .topbar-r{display:flex;align-items:center;gap:10px}
+
+/* Breadcrumb */
 .breadcrumb{padding:14px 36px 0;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt3)}
 .breadcrumb span{color:var(--txt2)}
-.breadcrumb svg{width:12px;height:12px}
+.breadcrumb svg{width:12px;height:12px;flex-shrink:0}
+
 .content{padding:20px 36px 40px;overflow-y:auto;height:calc(100vh - var(--topbar))}
 
 /* Flash */
@@ -214,8 +218,15 @@ body{overflow-x:hidden;overflow-y:hidden}
     <a href="{{ url_for('faculty_bp.faculty_exams') }}" class="nav-a">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Exams
     </a>
+    <a href="{{ url_for('faculty_analysis_bp.faculty_analysis') }}" class="nav-a">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83M22 12A10 10 0 0 0 12 2v10z"/></svg>Performance Analysis
+    </a>
     <a href="{{ url_for('faculty_bp.faculty_results') }}" class="nav-a">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Results & Analytics
+    </a>
+    <a href="{{ url_for('faculty_analysis_bp.faculty_powerbi') }}" class="nav-a">
+      <svg style="color:#f2c811" viewBox="0 0 24 24" fill="currentColor"><path d="M11.5 9H15V22H11.5V9ZM19 13H22.5V22H19V13ZM4 16H7.5V22H4V16Z"/></svg>
+      Power BI Analytics
     </a>
   </nav>
   <div class="sidebar-div"></div>
@@ -335,7 +346,7 @@ body{overflow-x:hidden;overflow-y:hidden}
               {% endif %}
             </td>
             <td>
-              <form action="#" method="POST" onsubmit="alert('Remove feature coming soon.'); return false;">
+              <form action="{{ url_for('faculty_bp.delete_student', enrollment_no=s.enrollment_no) }}" method="POST" onsubmit="return confirm('Remove student from your cohort?')">
                 <button type="submit" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;font-size:11.5px;font-weight:600;cursor:pointer;border:1px solid rgba(244,63,94,.2);background:rgba(244,63,94,.08);color:#f87171;transition:all .2s" onmouseover="this.style.background='rgba(244,63,94,.18)'" onmouseout="this.style.background='rgba(244,63,94,.08)'">
                   <svg style="width:12px;height:12px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                   Remove
@@ -385,7 +396,7 @@ body{overflow-x:hidden;overflow-y:hidden}
           </div>
           <div class="fg">
             <label>Password</label>
-            <input type="password" name="password" placeholder="Temporary password" required>
+            <input type="password" name="password" value="Password@123" placeholder="Temporary password" required>
           </div>
         </div>
         <div class="form-row">
@@ -401,11 +412,11 @@ body{overflow-x:hidden;overflow-y:hidden}
           </div>
         </div>
         <div class="fg">
-          <label>Assign to Subject</label>
-          <select name="subject_id">
+          <label>Assign to Course (Exam)</label>
+          <select name="course_code">
             <option value="">— None (add later) —</option>
             {% for sub in subjects %}
-            <option value="{{ sub.id }}">{{ sub.subject_name }} ({{ sub.branch }} | Sem {{ sub.semester }})</option>
+            <option value="{{ sub.course_code }}">{{ sub.subject_name }} ({{ sub.course_code }})</option>
             {% endfor %}
           </select>
         </div>
@@ -425,11 +436,11 @@ body{overflow-x:hidden;overflow-y:hidden}
           <input type="file" name="csv_file" id="csvFile" accept=".csv" style="display:none" onchange="this.parentElement.querySelector('div').textContent=this.files[0]?.name||'Click to select'">
         </div>
         <div class="fg" style="margin-top:14px">
-          <label>Assign to Subject</label>
-          <select name="subject_id">
+          <label>Assign to Course (Exam)</label>
+          <select name="course_code">
             <option value="">— None —</option>
             {% for sub in subjects %}
-            <option value="{{ sub.id }}">{{ sub.subject_name }} ({{ sub.branch }})</option>
+            <option value="{{ sub.course_code }}">{{ sub.subject_name }} ({{ sub.course_code }})</option>
             {% endfor %}
           </select>
         </div>

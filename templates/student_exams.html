@@ -232,9 +232,30 @@
                     </div>
                 </div>
 
-                <button class="start-btn" onclick="startExam('{{ exam.subject_name }}')">
+                {% if exam.is_blacklisted %}
+                <button class="start-btn" style="background-color: var(--danger); cursor: not-allowed; opacity: 0.7;" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.718-3L13.717 6c-.772-1.333-2.694-1.333-3.464 0L3.34 16c-.784 1.333.178 3 1.718 3z" /></svg>
+                    Disqualified
+                </button>
+                {% elif exam.is_completed %}
+                <button class="start-btn" style="background-color: var(--success); cursor: default;" disabled>
+                    Completed (Score: {{ exam.score }})
+                </button>
+                {% elif exam.status == 'upcoming' %}
+                <button class="start-btn" style="background-color: var(--border); color: var(--text-muted); cursor: not-allowed;" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    Upcoming
+                </button>
+                <div style="font-size:11px; color:var(--text-muted); text-align:center; margin-top:8px">Starts: {{ exam.start_time[5:16].replace('T', ' ') if exam.start_time else 'Scheduled' }}</div>
+                {% elif exam.status == 'expired' %}
+                <button class="start-btn" style="background-color: #334155; color: var(--danger); border: 1px solid var(--danger); cursor: not-allowed;" disabled>
+                    Expired
+                </button>
+                {% else %}
+                <button class="start-btn" onclick="startExam(this)" data-subject="{{ exam.subject_name }}" data-course-code="{{ exam.course_code }}">
                     Start Exam <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
                 </button>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -246,13 +267,15 @@
 </main>
 
 <script>
-  function startExam(subjectName) {
+function startExam(btn) {
+    const subjectName = btn.dataset.subject;
+    const courseCode = btn.dataset.courseCode;
     if(confirm("Are you sure you want to start the exam for " + subjectName + "?")) {
       const studentName = "{{ student.full_name }}" || "Student"; 
       localStorage.setItem("studentName", studentName);
       localStorage.setItem("examSubject", subjectName);
       // Redirect with Query Parameter
-      window.location.href = "{{ url_for('student_bp.exam_page') }}?subject=" + encodeURIComponent(subjectName);
+      window.location.href = "{{ url_for('student_bp.exam_page') }}?course_code=" + courseCode;
     }
   }
 </script>

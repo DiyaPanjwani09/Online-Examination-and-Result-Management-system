@@ -56,7 +56,7 @@ body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--txt);disp
 .wrap{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;position:relative;z-index:10}
 
 /* Topbar */
-.topbar{height:var(--topbar);background:rgba(3,7,18,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar{height:var(--topbar);background:rgba(3,7,18,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
 .topbar-l h1{font-size:17px;font-weight:700}
 .topbar-l h1 span{background:linear-gradient(90deg,#a5b4fc,#67e8f9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .topbar-l p{font-size:11.5px;color:var(--txt2);margin-top:1px}
@@ -64,13 +64,18 @@ body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--txt);disp
 .topbar-date{font-size:11.5px;color:var(--txt2);background:var(--surface2);border:1px solid var(--border);padding:5px 13px;border-radius:30px}
 .topbar-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 0 12px var(--primary-glow)}
 
+/* Mobile Menu Btn */
+.mobile-menu-btn{display:none;width:38px;height:38px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);align-items:center;justify-content:center;color:var(--txt);cursor:pointer;margin-right:12px}
+.mobile-menu-btn svg{width:20px;height:20px}
+@media (max-width: 900px) { .mobile-menu-btn{display:flex} }
+
 /* Breadcrumb */
 .breadcrumb{padding:14px 36px 0;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt3)}
 .breadcrumb span{color:var(--txt2)}
 .breadcrumb svg{width:12px;height:12px}
 
 /* Content */
-.content{padding:20px 36px 40px;overflow-y:auto}
+.content{padding:20px 20px 40px;overflow-y:auto}
 
 /* Flash */
 .flash{padding:11px 16px;border-radius:var(--r-sm);font-size:13px;font-weight:500;display:flex;align-items:center;gap:9px;margin-bottom:14px;animation:fadeIn .3s ease}
@@ -95,8 +100,8 @@ body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--txt);disp
 .stat-sub{font-size:10.5px;color:var(--txt3);margin-top:7px}
 
 /* ── Two-col ──────────────────────────────────────────────────────────── */
-.two-col{display:grid;grid-template-columns:1fr 340px;gap:18px;margin-bottom:22px}
-.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px}
+.two-col{display:grid;grid-template-columns:1fr;gap:22px;margin-bottom:22px}
+.three-col{display:grid;grid-template-columns:1fr;gap:22px}
 
 /* Panel */
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);overflow:hidden}
@@ -243,11 +248,39 @@ body.light .panel{background:rgba(255,255,255,.97)}
 body.light .sem-hd{background:rgba(99,102,241,.04)}
 body.light .empty{color:#64748b}
 
-/* ── Screen-fit fixes ──────────────────────────────────────────── */
-body{overflow-x:hidden;overflow-y:hidden}
-.content{overflow-y:auto;overflow-x:hidden}
-.sidebar{overflow-y:auto;overflow-x:hidden}
-.wrap{overflow:hidden}
+/* ── Screen-fit & Responsive ────────────────────────────────────────── */
+body{overflow-x:auto;overflow-y:auto}
+.content{overflow-y:auto;overflow-x:auto}
+.sidebar{overflow-y:auto;overflow-x:auto}
+.wrap{overflow:auto}
+
+@media (max-width: 1400px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .three-col { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 1100px) {
+  .two-col { grid-template-columns: 1fr; }
+}
+
+
+@media (max-width: 900px) {
+  :root { --sidebar: 0px; }
+  .sidebar { transform: translateX(-100%); transition: transform .3s; }
+  .sidebar.active { transform: translateX(0); }
+  .wrap { margin-left: 0; }
+  .topbar { padding: 0 20px; }
+  .content { padding: 20px 20px 40px; }
+}
+
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .topbar-l h1 { font-size: 15px; }
+  .topbar-l p { font-size: 10px; }
+  .stat-val { font-size: 24px; }
+  .etable th:nth-child(3), .etable td:nth-child(3),
+  .etable th:nth-child(4), .etable td:nth-child(4) { display: none; }
+}
 
 </style>
 </head>
@@ -292,10 +325,18 @@ body{overflow-x:hidden;overflow-y:hidden}
       Exams
       <span class="nav-badge">{{ active_exams }}</span>
     </a>
+    <a href="{{ url_for('faculty_analysis_bp.faculty_analysis') }}" class="nav-a">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83M22 12A10 10 0 0 0 12 2v10z"/></svg>
+      Performance Analysis
+    </a>
     <a href="{{ url_for('faculty_bp.faculty_results') }}" class="nav-a">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       Results & Analytics
       {% if total_results > 0 %}<span class="nav-badge">{{ total_results }}</span>{% endif %}
+    </a>
+    <a href="{{ url_for('faculty_analysis_bp.faculty_powerbi') }}" class="nav-a">
+      <svg style="color:#f2c811" viewBox="0 0 24 24" fill="currentColor"><path d="M11.5 9H15V22H11.5V9ZM19 13H22.5V22H19V13ZM4 16H7.5V22H4V16Z"/></svg>
+      Power BI Analytics
     </a>
   </nav>
 
@@ -316,9 +357,14 @@ body{overflow-x:hidden;overflow-y:hidden}
 
   <!-- Topbar -->
   <header class="topbar">
-    <div class="topbar-l">
-      <h1>Welcome back, <span>{{ faculty.full_name.split()[0] }}</span> 👋</h1>
-      <p>Here's your academic overview for today</p>
+    <div class="topbar-l" style="display:flex;align-items:center">
+      <button class="mobile-menu-btn" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div>
+        <h1>Welcome back, <span>{{ faculty.full_name.split()[0] }}</span> 👋</h1>
+        <p>Here's your academic overview for today</p>
+      </div>
     </div>
     <div class="topbar-r">
       <div class="topbar-date" id="liveDate"></div>
@@ -327,7 +373,7 @@ body{overflow-x:hidden;overflow-y:hidden}
   </header>
 
   <!-- Breadcrumb -->
-  <div class="breadcrumb">
+  <div class="breadcrumb" style="padding-left:24px">
     ExamPortal
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     <span>Overview</span>
@@ -408,50 +454,54 @@ body{overflow-x:hidden;overflow-y:hidden}
               New Exam
             </a>
           </div>
+          </div>
         </div>
-        {% if recent_exams %}
-        <table class="etable">
-          <thead>
+        <div style="overflow-x:auto; width:100%">
+          {% if recent_exams %}
+          <table class="etable">
+            <thead>
+              <tr>
+                <th>Exam</th>
+                <th>Subject</th>
+                <th>Marks</th>
+                <th>Attempts</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for e in recent_exams %}
             <tr>
-              <th>Exam</th>
-              <th>Subject</th>
-              <th>Marks</th>
-              <th>Attempts</th>
-              <th>Status</th>
+              <td>
+                <div class="e-name">{{ e.exam_name }}</div>
+                <div class="e-meta">{{ e.duration_minutes }} min &bull; {{ e.question_count }} Qs</div>
+              </td>
+              <td>
+                <div style="font-weight:500;font-size:13px">{{ e.subject_name }}</div>
+                <div class="e-meta">{{ e.branch }} &bull; Sem {{ e.semester }}</div>
+              </td>
+              <td style="font-weight:600">{{ e.total_marks }}<span style="color:var(--txt3);font-size:11px"> pts</span></td>
+              <td style="font-weight:600;color:#a5b4fc">{{ e.attempt_count }}</td>
+              <td>
+                {% if e.attempt_count > 0 %}
+                  <span class="badge badge-active">Active</span>
+                {% else %}
+                  <span class="badge badge-pending">Awaiting</span>
+                {% endif %}
+              </td>
             </tr>
-          </thead>
-          <tbody>
-          {% for e in recent_exams %}
-          <tr>
-            <td>
-              <div class="e-name">{{ e.exam_name }}</div>
-              <div class="e-meta">{{ e.duration_minutes }} min &bull; {{ e.question_count }} Qs</div>
-            </td>
-            <td>
-              <div style="font-weight:500;font-size:13px">{{ e.subject_name }}</div>
-              <div class="e-meta">{{ e.branch }} &bull; Sem {{ e.semester }}</div>
-            </td>
-            <td style="font-weight:600">{{ e.total_marks }}<span style="color:var(--txt3);font-size:11px"> pts</span></td>
-            <td style="font-weight:600;color:#a5b4fc">{{ e.attempt_count }}</td>
-            <td>
-              {% if e.attempt_count > 0 %}
-                <span class="badge badge-active">Active</span>
-              {% else %}
-                <span class="badge badge-pending">Awaiting</span>
-              {% endif %}
-            </td>
-          </tr>
-          {% endfor %}
-          </tbody>
-        </table>
-        {% else %}
-        <div class="empty">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-          <p>No exams created yet.</p>
-          <a href="{{ url_for('faculty_bp.faculty_exams') }}" class="btn btn-primary">Create First Exam</a>
+            {% endfor %}
+            </tbody>
+          </table>
+          {% else %}
+          <div class="empty">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            <p>No exams created yet.</p>
+            <a href="{{ url_for('faculty_bp.faculty_exams') }}" class="btn btn-primary">Create First Exam</a>
+          </div>
+          {% endif %}
         </div>
-        {% endif %}
       </div>
+
 
       <!-- Right column: chart + class avg -->
       <div style="display:flex;flex-direction:column;gap:18px">
@@ -493,7 +543,7 @@ body{overflow-x:hidden;overflow-y:hidden}
               <strong>{{ class_avg }}%</strong>
             </div>
             <div class="avg-bar">
-              <div class="avg-fill" id="avgFill" style="width:{{ class_avg }}%"></div>
+              <div class="avg-fill" id="avgFill" data-width="{{ class_avg }}"></div>
             </div>
             <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10.5px;color:var(--txt3)">
               <span>0%</span><span>Pass (40%)</span><span>100%</span>
@@ -503,6 +553,45 @@ body{overflow-x:hidden;overflow-y:hidden}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             Full Analytics
           </a>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="panel">
+          <div class="panel-hd">
+            <div class="panel-title">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+              Recent Submissions
+            </div>
+          </div>
+          <div class="feed">
+            {% if recent_activity %}
+              {% for a in recent_activity %}
+              <div class="feed-item">
+                <div class="feed-dot-col">
+                  {% set p_ratio = a.score / a.total_marks if a.total_marks > 0 else 0 %}
+                  <div class="feed-dot {% if p_ratio >= 0.75 %}g{% elif p_ratio >= 0.4 %}y{% endif %}"></div>
+                  {% if not loop.last %}<div class="feed-thread"></div>{% endif %}
+                </div>
+                <div style="flex:1">
+                  <div class="feed-title"><strong>{{ a.full_name }}</strong> completed <span>{{ a.exam_name }}</span></div>
+                  <div class="feed-sub">{{ a.subject_name }} &bull; {{ a.enrollment_no }}</div>
+                  <div class="feed-score" 
+                    {% if p_ratio >= 0.75 %}
+                      data-color="#34d399" data-bg="rgba(16,185,129,.1)"
+                    {% elif p_ratio >= 0.4 %}
+                      data-color="#fbbf24" data-bg="rgba(245,158,11,.1)"
+                    {% else %}
+                      data-color="#f87171" data-bg="rgba(244,63,94,.1)"
+                    {% endif %}>
+                    {{ a.score }}/{{ a.total_marks }} ({{ (p_ratio * 100)|round|int }}%)
+                  </div>
+                </div>
+              </div>
+              {% endfor %}
+            {% else %}
+              <div class="empty" style="padding:28px"><p style="font-size:12px">No recent activity.</p></div>
+            {% endif %}
+          </div>
         </div>
       </div>
     </div>
@@ -604,6 +693,10 @@ body{overflow-x:hidden;overflow-y:hidden}
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/></svg>
             View Exams
           </a>
+          <a href="{{ url_for('faculty_analysis_bp.faculty_powerbi') }}" class="qa">
+            <svg style="color:#f2c811" viewBox="0 0 24 24" fill="currentColor"><path d="M11.5 9H15V22H11.5V9ZM19 13H22.5V22H19V13ZM4 16H7.5V22H4V16Z"/></svg>
+            BI Module
+          </a>
         </div>
       </div>
     </div>
@@ -611,40 +704,53 @@ body{overflow-x:hidden;overflow-y:hidden}
   </main>
 </div>
 
+<script id="score-dist" type="application/json">
+  {{ score_dist | tojson }}
+</script>
+
 <script>
 // Live date
-(()=>{
-  const el=document.getElementById('liveDate');
-  const upd=()=>{ el.textContent=new Date().toLocaleDateString('en-IN',{weekday:'short',year:'numeric',month:'short',day:'numeric'}); };
-  upd(); setInterval(upd,60000);
+(function() {
+  const el = document.getElementById('liveDate');
+  if (!el) return;
+  const upd = () => { el.textContent = new Date().toLocaleDateString('en-IN', {weekday:'short', year:'numeric', month:'short', day:'numeric'}); };
+  upd();
+  setInterval(upd, 60000);
 })();
 
-// Donut chart
-{% if total_results > 0 %}
-(()=>{
-  const ctx=document.getElementById('donutChart').getContext('2d');
-  new Chart(ctx,{
-    type:'doughnut',
-    data:{
-      labels:['Excellent (≥75%)','Passed (40–75%)','Failed (<40%)'],
-      datasets:[{
-        data:[{{ score_dist.excellent }},{{ score_dist.passed }},{{ score_dist.failed }}],
-        backgroundColor:['rgba(52,211,153,.85)','rgba(165,180,252,.85)','rgba(248,113,113,.85)'],
-        borderColor:['#34d399','#a5b4fc','#f87171'],
-        borderWidth:1.5,
-        hoverOffset:6
+// Performance Doughnut Chart
+(function() {
+  const distNode = document.getElementById('score-dist');
+  const canvas = document.getElementById('donutChart');
+  if (!distNode || !canvas) return;
+  
+  const scoreDist = JSON.parse(distNode.textContent || '{}');
+  const total = (scoreDist.excellent || 0) + (scoreDist.passed || 0) + (scoreDist.failed || 0);
+  
+  if (total === 0) return;
+
+  new Chart(canvas.getContext('2d'), {
+    type: 'doughnut',
+    data: {
+      labels: ['Excellent (≥75%)', 'Passed (40–75%)', 'Failed (<40%)'],
+      datasets: [{
+        data: [scoreDist.excellent || 0, scoreDist.passed || 0, scoreDist.failed || 0],
+        backgroundColor: ['rgba(52,211,153,.85)', 'rgba(165,180,252,.85)', 'rgba(248,113,113,.85)'],
+        borderColor: ['#34d399', '#a5b4fc', '#f87171'],
+        borderWidth: 1.5,
+        hoverOffset: 6
       }]
     },
-    options:{
-      responsive:true,
-      cutout:'70%',
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          callbacks:{
-            label:function(ctx){
-              const total=ctx.dataset.data.reduce((a,b)=>a+b,0);
-              const pct=total?Math.round(ctx.raw/total*100):0;
+    options: {
+      responsive: true,
+      cutout: '70%',
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: function(ctx) {
+              const currentTotal = ctx.dataset.data.reduce((a, b) => a + b, 0);
+              const pct = currentTotal ? Math.round(ctx.raw / currentTotal * 100) : 0;
               return ` ${ctx.label}: ${ctx.raw} (${pct}%)`;
             }
           }
@@ -653,18 +759,44 @@ body{overflow-x:hidden;overflow-y:hidden}
     }
   });
 })();
-{% endif %}
 
 // 3D tilt on stat cards
-document.querySelectorAll('.stat').forEach(c=>{
-  c.addEventListener('mousemove',e=>{
-    const r=c.getBoundingClientRect();
-    const x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5;
-    c.style.transform=`perspective(700px) rotateX(${-y*6}deg) rotateY(${x*6}deg) translateY(-3px)`;
+document.querySelectorAll('.stat').forEach(c => {
+  c.addEventListener('mousemove', e => {
+    const r = c.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - .5, y = (e.clientY - r.top) / r.height - .5;
+    c.style.transform = `perspective(700px) rotateX(${-y * 6}deg) rotateY(${x * 6}deg) translateY(-3px)`;
   });
-  c.addEventListener('mouseleave',()=>{ c.style.transition='transform .5s ease'; c.style.transform=''; });
-  c.addEventListener('mouseenter',()=>{ c.style.transition='none'; });
+  c.addEventListener('mouseleave', () => { c.style.transition = 'transform .5s ease'; c.style.transform = ''; });
+  c.addEventListener('mouseenter', () => { c.style.transition = 'none'; });
 });
+
+// Dynamic styles from data-attrs (silence linters)
+document.querySelectorAll('[data-width]').forEach(el => el.style.width = el.dataset.width + '%');
+document.querySelectorAll('[data-bg]').forEach(el => el.style.background = el.dataset.bg);
+document.querySelectorAll('[data-color]').forEach(el => el.style.color = el.dataset.color);
+
+// Mobile Sidebar Toggle
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  sb.classList.toggle('active');
+  
+  // Create overlay if not exists
+  let overlay = document.querySelector('.sb-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'sb-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:150;backdrop-filter:blur(4px);display:none';
+    document.body.appendChild(overlay);
+    overlay.onclick = toggleSidebar;
+  }
+  
+  if (sb.classList.contains('active')) {
+    overlay.style.display = 'block';
+  } else {
+    overlay.style.display = 'none';
+  }
+}
 </script>
 </body>
 </html>

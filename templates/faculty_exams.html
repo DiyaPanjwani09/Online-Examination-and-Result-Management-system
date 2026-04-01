@@ -3,8 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Exam Management | ExamPortal Faculty</title>
+<title>Exam Management | Faculty Portal</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 <style>
 :root{--primary:#6366f1;--primary-d:#4f46e5;--primary-glow:rgba(99,102,241,.3);--cyan:#06b6d4;--emerald:#10b981;--amber:#f59e0b;--rose:#f43f5e;--dark:#030712;--dark3:#111827;--dark4:#1f2937;--surface:rgba(17,24,39,.85);--surface2:rgba(31,41,55,.7);--border:rgba(255,255,255,.07);--border-h:rgba(99,102,241,.35);--txt:#f9fafb;--txt2:#9ca3af;--txt3:#6b7280;--sidebar:260px;--topbar:62px;--r:14px;--r-sm:9px}
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
@@ -37,12 +39,58 @@ body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--txt);disp
 
 /* ── Layout ─────────────────────────────────────────────────────────────── */
 .wrap{margin-left:var(--sidebar);flex:1;display:flex;flex-direction:column;min-height:100vh;position:relative;z-index:10;overflow:hidden}
-.topbar{height:var(--topbar);background:rgba(3,7,18,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 36px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
-.topbar-l h1{font-size:17px;font-weight:700}.topbar-l h1 span{background:linear-gradient(90deg,#a5b4fc,#67e8f9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+/* Topbar */
+.topbar{height:var(--topbar);background:rgba(3,7,18,.8);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-l h1{font-size:17px;font-weight:700}
+.topbar-l h1 span{background:linear-gradient(90deg,#a5b4fc,#67e8f9);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
 .topbar-l p{font-size:11.5px;color:var(--txt2);margin-top:1px}
+
+/* Breadcrumb */
 .breadcrumb{padding:14px 36px 0;display:flex;align-items:center;gap:6px;font-size:12px;color:var(--txt3)}
-.breadcrumb span{color:var(--txt2)}.breadcrumb svg{width:12px;height:12px}
-.content{padding:20px 36px 40px;overflow-y:auto;height:calc(100vh - var(--topbar))}
+.breadcrumb span{color:var(--txt2)}
+.breadcrumb svg{width:12px;height:12px;flex-shrink:0}
+
+.loading-spinner {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border: 2px solid rgba(255,255,255,.3);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.scanning { opacity: 0.7; pointer-events: none; }
+
+.content{padding:20px 20px 40px;overflow-y:auto;height:calc(100vh - var(--topbar))}
+
+/* Mobile Menu Btn */
+.mobile-menu-btn{display:none;width:38px;height:38px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);align-items:center;justify-content:center;color:var(--txt);cursor:pointer;margin-right:12px}
+.mobile-menu-btn svg{width:20px;height:20px}
+
+@media (max-width: 1100px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  :root { --sidebar: 0px; }
+  .sidebar { transform: translateX(-100%); transition: transform .3s; z-index: 1000; }
+  .sidebar.active { transform: translateX(0); }
+  .wrap { margin-left: 0; }
+  .topbar { padding: 0 20px; }
+  .breadcrumb { padding: 14px 20px 0; }
+  .content { padding: 20px 20px 40px; }
+  .mobile-menu-btn { display: flex; }
+}
+
+@media (max-width: 600px) {
+  .stats-row { grid-template-columns: 1fr; }
+  .topbar-l h1 { font-size: 15px; }
+  .stat-val { font-size: 22px; }
+  .exam-card-body { padding: 12px 14px; flex-direction: column; align-items: stretch; }
+  .exam-actions { margin-top: 12px; justify-content: flex-end; }
+}
+
 
 /* Flash */
 .flash{padding:11px 16px;border-radius:var(--r-sm);font-size:13px;font-weight:500;display:flex;align-items:center;gap:9px;margin-bottom:14px;animation:fadeIn .3s ease}
@@ -104,6 +152,21 @@ body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--txt);disp
 .act-dup:hover{background:rgba(139,92,246,.2)}
 .act-del{background:rgba(244,63,94,.1);color:#f87171;border:1px solid rgba(244,63,94,.2)}
 .act-del:hover{background:rgba(244,63,94,.2)}
+.act-blacklist{background:rgba(245,158,11,.1);color:#f59e0b;border:1px solid rgba(245,158,11,.2)}
+.act-blacklist:hover{background:rgba(245,158,11,.2)}
+
+/* Blacklist Modal Specifics */
+.bl-list{margin-top:16px;max-height:300px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r-sm);background:rgba(0,0,0,.2)}
+.bl-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-bottom:1px solid var(--border);transition:background .2s}
+.bl-item:last-child{border-bottom:none}
+.bl-item:hover{background:rgba(255,255,255,.03)}
+.bl-info{display:flex;flex-direction:column}
+.bl-name{font-size:13.5px;font-weight:600}
+.bl-enroll{font-size:11px;color:var(--txt3);font-family:monospace}
+.bl-toggle{position:relative;width:40px;height:20px;appearance:none;background:rgba(255,255,255,.1);border-radius:20px;outline:none;cursor:pointer;transition:background .3s}
+.bl-toggle:checked{background:var(--rose)}
+.bl-toggle::before{content:'';position:absolute;width:16px;height:16px;border-radius:50%;top:2px;left:2px;background:#fff;transition:transform .3s}
+.bl-toggle:checked::before{transform:translateX(20px)}
 
 /* Stats drawer */
 .exam-drawer{display:none;background:rgba(3,7,18,.6);border-top:1px solid var(--border);padding:16px 20px;animation:slideDown .25s ease}
@@ -235,8 +298,15 @@ body{overflow-x:hidden;overflow-y:hidden}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>Exams
       <span class="nav-badge">{{ all_exams|length }}</span>
     </a>
+    <a href="{{ url_for('faculty_analysis_bp.faculty_analysis') }}" class="nav-a">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83M22 12A10 10 0 0 0 12 2v10z"/></svg>Performance Analysis
+    </a>
     <a href="{{ url_for('faculty_bp.faculty_results') }}" class="nav-a">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>Results & Analytics
+    </a>
+    <a href="{{ url_for('faculty_analysis_bp.faculty_powerbi') }}" class="nav-a">
+      <svg style="color:#f2c811" viewBox="0 0 24 24" fill="currentColor"><path d="M11.5 9H15V22H11.5V9ZM19 13H22.5V22H19V13ZM4 16H7.5V22H4V16Z"/></svg>
+      Power BI Analytics
     </a>
   </nav>
   <div class="sidebar-div"></div>
@@ -253,9 +323,14 @@ body{overflow-x:hidden;overflow-y:hidden}
 <!-- ── Main ──────────────────────────────────────────────────────────────── -->
 <div class="wrap">
   <header class="topbar">
-    <div class="topbar-l">
-      <h1>Exam <span>Management</span></h1>
-      <p>Create, search, edit, duplicate and monitor all your exams</p>
+    <div class="topbar-l" style="display:flex;align-items:center">
+      <button class="mobile-menu-btn" onclick="toggleSidebar()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div>
+        <h1>Exam <span>Management</span></h1>
+        <p>Schedule and coordinate your sessions</p>
+      </div>
     </div>
     <button class="btn-create" onclick="openModal('createModal')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -266,6 +341,7 @@ body{overflow-x:hidden;overflow-y:hidden}
     ExamPortal <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
     <span>Exam Management</span>
   </div>
+
 
   <main class="content">
     {% with messages = get_flashed_messages(with_categories=true) %}
@@ -340,7 +416,7 @@ body{overflow-x:hidden;overflow-y:hidden}
              data-marks="{{ e.total_marks }}"
              data-attempts="{{ e.attempt_count }}"
              data-questions="{{ e.question_count }}"
-             id="card-{{ e.id }}">
+             id="card-{{ e.course_code }}">
           <div class="exam-card-body">
             <div class="exam-card-left">
               <div class="exam-title">
@@ -351,38 +427,48 @@ body{overflow-x:hidden;overflow-y:hidden}
                   <span class="exam-chip chip-awaiting">Awaiting</span>
                 {% endif %}
               </div>
-              <div class="exam-meta-row">
-                <span class="exam-chip chip-sub">{{ e.subject_name }}</span>
-                <span class="exam-chip chip-marks">{{ e.total_marks }} marks</span>
-                <span class="exam-chip chip-dur">{{ e.duration_minutes }} min</span>
-                <span class="exam-chip chip-qs">{{ e.question_count }} Qs</span>
-                <span class="exam-chip chip-pass">Pass: {{ e.pass_percentage or 40 }}%</span>
-                {% if e.exam_date %}
-                  <span class="exam-chip chip-date">📅 {{ e.exam_date[:10] }}</span>
-                {% endif %}
-                <span style="font-size:11px;color:var(--txt3)">{{ e.attempt_count }} submission{{ 's' if e.attempt_count != 1 else '' }}</span>
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:6px">
+                  {% if e.difficulty_dist.easy > 0 %}<span class="exam-chip" style="background:rgba(16,185,129,.1);color:#34d399;border-color:rgba(16,185,129,.2)">{{ e.difficulty_dist.easy }} Easy</span>{% endif %}
+                  {% if e.difficulty_dist.medium > 0 %}<span class="exam-chip" style="background:rgba(245,158,11,.1);color:#fbbf24;border-color:rgba(245,158,11,.2)">{{ e.difficulty_dist.medium }} Medium</span>{% endif %}
+                  {% if e.difficulty_dist.hard > 0 %}<span class="exam-chip" style="background:rgba(244,63,94,.1);color:#f87171;border-color:rgba(244,63,94,.2)">{{ e.difficulty_dist.hard }} Hard</span>{% endif %}
+                  {% if e.difficulty_dist.unknown > 0 %}
+                    <span class="exam-chip" style="background:rgba(99,102,241,.1);color:#a5b4fc;border-color:rgba(99,102,241,.3)">{{ e.difficulty_dist.unknown }} Unknown</span>
+                  {% endif %}
+                </div>
+                <div style="margin-top:6px;font-size:11px;color:var(--txt3)">{{ e.attempt_count }} submission{{ 's' if e.attempt_count != 1 else '' }}</div>
               </div>
             </div>
             <div class="exam-actions">
-              <button class="act-btn act-stats" onclick="toggleStats({{ e.id }})">
+              <button class="act-btn act-stats" onclick="toggleStats(this)" data-id="{{ e.course_code }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
                 Stats
               </button>
               <a href="{{ url_for('faculty_bp.manage_questions', subject_id=e.subject_id) }}" class="act-btn act-q">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
-                Questions
+                Edit Questions
               </a>
-              <button class="act-btn act-edit" onclick="openEditModal({{ e.id }}, '{{ e.exam_name|replace("'","\\'") }}', {{ e.total_marks or 100 }}, {{ e.duration_minutes or 60 }}, {{ e.pass_percentage or 40 }}, '{{ e.exam_date[:10] if e.exam_date else "" }}')">
+              <button class="act-btn act-dup" onclick="openUploadModal('{{ e.course_code }}', '{{ e.exam_name }}')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Bulk Upload
+              </button>
+              <button class="act-btn act-edit" onclick="openEditModal(this)"
+                      data-id="{{ e.course_code }}" data-name="{{ e.exam_name }}" data-marks="{{ e.total_marks or 100 }}"
+                      data-dur="{{ e.duration_minutes or 60 }}" data-pass="{{ e.pass_percentage or 40 }}"
+                      data-date="{{ e.exam_date }}" data-start="{{ e.start_time }}" data-end="{{ e.end_time }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                 Edit
               </button>
-              <form action="{{ url_for('faculty_bp.duplicate_exam', exam_id=e.id) }}" method="POST" style="display:inline" onsubmit="return confirm('Duplicate this exam?')">
+              <form action="{{ url_for('faculty_bp.duplicate_exam', course_code=e.course_code) }}" method="POST" style="display:inline" onsubmit="return confirm('Duplicate this exam?')">
                 <button type="submit" class="act-btn act-dup">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                   Duplicate
                 </button>
               </form>
-              <button class="act-btn act-del" onclick="openDelModal({{ e.id }}, '{{ e.exam_name|replace("'","\\'") }}')">
+              <button class="act-btn act-blacklist" onclick="openBlacklistModal(this)" data-id="{{ e.course_code }}" data-name="{{ e.exam_name }}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Blacklist
+              </button>
+              <button class="act-btn act-del" onclick="openDelModal(this)" data-id="{{ e.course_code }}" data-name="{{ e.exam_name }}">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 Delete
               </button>
@@ -390,13 +476,13 @@ body{overflow-x:hidden;overflow-y:hidden}
           </div>
 
           <!-- Stats Drawer (lazy loaded) -->
-          <div class="exam-drawer" id="drawer-{{ e.id }}">
-            <div class="drawer-grid" id="drawer-stats-{{ e.id }}">
+          <div class="exam-drawer" id="drawer-{{ e.course_code }}">
+            <div class="drawer-grid" id="drawer-stats-{{ e.course_code }}">
               <div class="d-stat" style="grid-column:1/-1;color:var(--txt3);font-size:12px;text-align:center;padding:18px">
                 Loading statistics…
               </div>
             </div>
-            <div id="drawer-table-wrap-{{ e.id }}"></div>
+            <div id="drawer-table-wrap-{{ e.course_code }}"></div>
           </div>
         </div>
         {% endfor %}
@@ -422,7 +508,7 @@ body{overflow-x:hidden;overflow-y:hidden}
       <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Create New Exam</h2>
       <button class="mcls" onclick="closeModal('createModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
-    <form action="{{ url_for('faculty_bp.create_exam') }}" method="POST">
+    <form action="{{ url_for('faculty_bp.create_exam') }}" method="POST" enctype="multipart/form-data">
       <div class="fg">
         <label>Subject / Cohort</label>
         <select name="subject_id" required>
@@ -430,9 +516,22 @@ body{overflow-x:hidden;overflow-y:hidden}
           {% for s in subjects %}<option value="{{ s.id }}">{{ s.subject_name }} ({{ s.branch }} | Sem {{ s.semester }})</option>{% endfor %}
         </select>
       </div>
-      <div class="fg">
-        <label>Exam Name</label>
-        <input type="text" name="exam_name" placeholder="e.g. Midterm 1, Unit Test 3" required>
+      <div class="form-row">
+        <div class="fg">
+          <label>Course Code</label>
+          <select name="course_code" required>
+            <option value="" disabled selected>— Select code —</option>
+            {% for s in subjects %}
+              {% if s.subject_code %}
+                <option value="{{ s.subject_code }}">{{ s.subject_code }} ({{ s.subject_name }})</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+        </div>
+        <div class="fg">
+          <label>Exam Name</label>
+          <input type="text" name="exam_name" placeholder="e.g. Midterm 1" required>
+        </div>
       </div>
       <div class="form-3">
         <div class="fg">
@@ -449,14 +548,58 @@ body{overflow-x:hidden;overflow-y:hidden}
         </div>
       </div>
       <div class="fg">
-        <label>Schedule Date (optional)</label>
-        <input type="date" name="exam_date">
+        <label>Exam Date & Schedule</label>
+        <div class="form-row">
+          <div class="fg" style="margin-bottom:0">
+            <label style="font-size:10px;opacity:.8">Start Time</label>
+            <input type="text" name="start_time" class="datetime-picker" placeholder="Select Start Date & Time" required>
+          </div>
+          <div class="fg" style="margin-bottom:0">
+            <label style="font-size:10px;opacity:.8">End Time</label>
+            <input type="text" name="end_time" class="datetime-picker" placeholder="Select End Date & Time" required>
+          </div>
+        </div>
+      </div>
+
+      <div class="fg" style="background:rgba(30,41,59,0.5);padding:16px;border-radius:var(--r-sm);border:1px solid var(--border)">
+        <label style="display:block;font-size:13px;font-weight:700;color:var(--txt);margin-bottom:12px;display:flex;align-items:center;gap:8px">
+          <svg style="width:14px;height:14px;color:var(--primary)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Mass Bulk Upload (Optional CSV)
+        </label>
+        
+        <div class="fg" style="margin-bottom:0">
+          <label style="font-size:10px;text-transform:none;opacity:.8">Upload Questions CSV</label>
+          <input type="file" name="csv_file" accept=".csv" style="font-size:11px;padding:6px;border:1px dashed var(--border-h);background:rgba(99,102,241,.05)">
+        </div>
+        <div style="font-size:9.5px;color:var(--txt3);margin-top:10px;line-height:1.4">
+          Columns: <code>questions</code>, <code>option1</code>, <code>option2</code>, <code>option3</code>, <code>option4</code>, <code>correct answer</code>, <code>difficulty</code>(easy/medium/hard).
+        </div>
+      </div>
+
+      <div style="margin-top:14px; margin-bottom: 14px; padding: 12px; background: rgba(255,255,255,0.02); border: 1px dashed var(--border); border-radius: var(--r-sm);">
+        <label style="display:block;font-size:12px;font-weight:700;color:var(--txt);margin-bottom:12px">🤖 Random Pick From Bank <span style="font-weight:400;color:var(--txt3);font-size:10px">(Optional)</span></label>
+        <div class="form-3">
+          <div class="fg" style="margin-bottom:0">
+            <label style="color:#10b981">Easy</label>
+            <input type="number" name="auto_easy" value="0" min="0">
+          </div>
+          <div class="fg" style="margin-bottom:0">
+            <label style="color:#f59e0b">Medium</label>
+            <input type="number" name="auto_medium" value="0" min="0">
+          </div>
+          <div class="fg" style="margin-bottom:0">
+            <label style="color:#f43f5e">Hard</label>
+            <input type="number" name="auto_hard" value="0" min="0">
+          </div>
+        </div>
+        <div style="font-size:10px;color:var(--txt3);margin-top:8px;">Randomly pick from bank. These will be added along with the CSV uploads above.</div>
       </div>
       <div class="mact">
         <button type="button" class="btn-cancel" onclick="closeModal('createModal')">Cancel</button>
         <button type="submit" class="btn-save">Create Exam</button>
       </div>
     </form>
+
   </div>
 </div>
 
@@ -486,9 +629,15 @@ body{overflow-x:hidden;overflow-y:hidden}
           <input type="number" name="pass_percentage" id="editPass" min="1" max="100" required>
         </div>
       </div>
-      <div class="fg">
-        <label>Scheduled Date</label>
-        <input type="date" name="exam_date" id="editDate">
+      <div class="form-row">
+        <div class="fg">
+          <label>Start Window</label>
+          <input type="text" name="start_time" id="editStart" class="datetime-picker" placeholder="Select Start" required>
+        </div>
+        <div class="fg">
+          <label>End Window</label>
+          <input type="text" name="end_time" id="editEnd" class="datetime-picker" placeholder="Select End" required>
+        </div>
       </div>
       <div class="mact">
         <button type="button" class="btn-cancel" onclick="closeModal('editModal')">Cancel</button>
@@ -500,26 +649,64 @@ body{overflow-x:hidden;overflow-y:hidden}
 
 <!-- Delete Confirm Modal -->
 <div class="modal-bg" id="delModal">
-  <div class="modal" style="max-width:400px;text-align:center">
-    <div style="width:52px;height:52px;border-radius:50%;background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.25);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
-      <svg style="width:24px;height:24px;color:#f87171" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+  <div class="modal" style="max-width:380px">
+    <div class="mhd">
+      <h2>Delete Exam</h2>
     </div>
-    <div style="font-size:18px;font-weight:700;margin-bottom:8px">Delete Exam</div>
-    <div style="font-size:13px;color:var(--txt2);margin-bottom:16px">
-      You are about to permanently delete<br>
-      <strong style="display:block;margin:8px 0;background:rgba(244,63,94,.08);color:#fca5a5;padding:7px 14px;border-radius:8px;font-size:14px" id="delExamName"></strong>
-      All student attempts will also be removed.
+    <div style="font-size:14px;color:var(--txt2);margin-bottom:20px">
+      Are you sure you want to delete <strong id="delExamName" style="color:var(--txt)"></strong>?<br>
+      This will also remove all student attempts for this exam.
     </div>
-    <div style="display:flex;gap:10px;justify-content:center">
-      <button class="btn-cancel" onclick="closeModal('delModal')">Cancel</button>
-      <form id="delForm" method="POST" style="display:inline">
+    <form id="delForm" method="POST">
+      <div class="mact">
+        <button type="button" class="btn-cancel" onclick="closeModal('delModal')">No, Keep</button>
         <button type="submit" class="btn-danger">Yes, Delete</button>
-      </form>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Blacklist Management Modal -->
+<div class="modal-bg" id="blacklistModal">
+  <div class="modal" style="max-width:550px">
+    <div class="mhd">
+      <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>Manage Blacklist</h2>
+      <button class="mcls" onclick="closeModal('blacklistModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <div style="font-size:13px;color:var(--txt2);margin-bottom:16px">
+      Select students to prevent them from attempting:<br>
+      <strong style="color:var(--txt);font-size:14px" id="blExamName"></strong>
+    </div>
+    
+    <div class="search-box" style="max-width:none;margin-bottom:12px">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="blStudentSearch" placeholder="Search by name or enrollment no..." oninput="filterBlacklist()">
+    </div>
+
+    <div class="bl-list" id="blStudentList">
+      <!-- Loaded dynamically via JS -->
+      <div style="padding:40px;text-align:center;color:var(--txt3);font-size:13px">Loading students...</div>
+    </div>
+
+    <div class="mact">
+      <button type="button" class="btn-save" onclick="closeModal('blacklistModal')">Done</button>
     </div>
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
+// Initialize Flatpickr for any datetime-picker class
+document.addEventListener('DOMContentLoaded', function() {
+    flatpickr(".datetime-picker", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i",
+        time_24hr: true,
+        minDate: "today",
+        theme: document.body.classList.contains('light') ? "default" : "dark"
+    });
+});
+
 // Modal utilities
 function openModal(id){ document.getElementById(id).classList.add('open'); }
 function closeModal(id){ document.getElementById(id).classList.remove('open'); }
@@ -528,26 +715,30 @@ document.querySelectorAll('.modal-bg').forEach(bg=>{
 });
 
 // Edit modal populate
-function openEditModal(id, name, marks, dur, pass, date){
-  document.getElementById('editForm').action = '/faculty/exam/edit/' + id;
-  document.getElementById('editName').value = name;
-  document.getElementById('editMarks').value = marks;
-  document.getElementById('editDur').value = dur;
-  document.getElementById('editPass').value = pass;
-  document.getElementById('editDate').value = date;
+function openEditModal(el){
+  const d = el.dataset;
+  document.getElementById('editForm').action = '/faculty/exam/edit/' + d.id;
+  document.getElementById('editName').value = d.name;
+  document.getElementById('editMarks').value = d.marks;
+  document.getElementById('editDur').value = d.dur;
+  document.getElementById('editPass').value = d.pass;
+  document.getElementById('editStart').value = d.start || '';
+  document.getElementById('editEnd').value = d.end || '';
   openModal('editModal');
 }
 
 // Delete modal
-function openDelModal(id, name){
-  document.getElementById('delExamName').textContent = name;
-  document.getElementById('delForm').action = '/faculty/exam/delete/' + id;
+function openDelModal(el){
+  const d = el.dataset;
+  document.getElementById('delExamName').textContent = d.name;
+  document.getElementById('delForm').action = '/faculty/exam/delete/' + d.id;
   openModal('delModal');
 }
 
 // Stats drawer — lazy fetch
 const loadedStats = new Set();
-function toggleStats(examId){
+function toggleStats(el){
+  const examId = el.dataset.id; // now course_code
   const drawer = document.getElementById('drawer-' + examId);
   const isOpen = drawer.classList.contains('open');
   // Close all others
@@ -635,11 +826,132 @@ function sortExams(){
   cards.forEach(c=>list.appendChild(c));
 }
 
-// / shortcut → focus search
+// Blacklist functionality
+let currentBlacklistExamId = null;
+function openBlacklistModal(el){
+  const id = el.dataset.id;
+  const name = el.dataset.name;
+  currentBlacklistExamId = id;
+  document.getElementById('blExamName').textContent = name;
+  document.getElementById('blStudentList').innerHTML = '<div style="padding:40px;text-align:center;color:var(--txt3);font-size:13px">Loading students...</div>';
+  document.getElementById('blStudentSearch').value = '';
+  openModal('blacklistModal');
+  
+  fetch('/faculty/exam/' + id + '/blacklist_data')
+    .then(r => r.json())
+    .then(data => {
+      const list = document.getElementById('blStudentList');
+      if(!data || data.length === 0){
+        list.innerHTML = '<div style="padding:40px;text-align:center;color:var(--txt3);font-size:13px">No students enrolled in this subject.</div>';
+        return;
+      }
+      list.innerHTML = data.map(s => `
+        <div class="bl-item" data-search="${s.full_name.toLowerCase()} ${s.enrollment_no.toLowerCase()}">
+          <div class="bl-info">
+            <span class="bl-name">${s.full_name}</span>
+            <span class="bl-enroll">${s.enrollment_no}</span>
+          </div>
+          <input type="checkbox" class="bl-toggle" ${s.is_blacklisted ? 'checked' : ''} onchange="toggleStudentBlacklist('${s.enrollment_no}', this)">
+        </div>
+      `).join('');
+    })
+    .catch(err => {
+      document.getElementById('blStudentList').innerHTML = '<div style="padding:40px;text-align:center;color:#f87171;font-size:13px">Error loading data.</div>';
+    });
+}
+
+function filterBlacklist(){
+  const term = document.getElementById('blStudentSearch').value.toLowerCase();
+  document.querySelectorAll('.bl-item').forEach(item => {
+    const search = item.dataset.search;
+    item.style.display = search.includes(term) ? 'flex' : 'none';
+  });
+}
+
+function toggleStudentBlacklist(enrollment_no, el){
+  fetch('/faculty/exam/' + currentBlacklistExamId + '/blacklist/toggle/' + enrollment_no, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' }
+  })
+  .then(r => r.json())
+  .then(d => {
+    if(d.status !== 'success'){
+      el.checked = !el.checked; // revert
+      alert('Error: ' + (d.error || 'Failed to update'));
+    }
+  })
+  .catch(() => {
+    el.checked = !el.checked; // revert
+    alert('Failed to connect to server');
+  });
+}
+
+
+// Shortcut & Escape listeners
 document.addEventListener('keydown', e=>{
   if(e.key==='/'&&document.activeElement.tagName!=='INPUT'){ e.preventDefault(); document.getElementById('examSearch').focus(); }
   if(e.key==='Escape'){ document.querySelectorAll('.modal-bg.open').forEach(m=>m.classList.remove('open')); }
 });
+// Mobile Sidebar Toggle
+function toggleSidebar() {
+  const sb = document.querySelector('.sidebar');
+  sb.classList.toggle('active');
+  let overlay = document.querySelector('.sb-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'sb-overlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900;backdrop-filter:blur(4px);display:none';
+    document.body.appendChild(overlay);
+    overlay.onclick = toggleSidebar;
+  }
+  overlay.style.display = sb.classList.contains('active') ? 'block' : 'none';
+}
+
+function openUploadModal(examId, examName) {
+    const modal = document.getElementById('uploadExamQuestionsModal');
+    const form = document.getElementById('uploadExamForm');
+    const title = document.getElementById('uqExamTitle');
+    
+    title.innerText = `Upload for: ${examName}`;
+    form.action = `/faculty/exam/${examId}/upload_questions`;
+    
+    modal.classList.add('open');
+}
 </script>
+
+<!-- Bulk Upload Modal for Existing Exam -->
+<div class="modal-bg" id="uploadExamQuestionsModal">
+  <div class="modal">
+    <div class="mhd">
+      <h2 id="uqExamTitle">Bulk Upload Questions</h2>
+      <button class="mcls" onclick="closeModal('uploadExamQuestionsModal')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+    </div>
+    <p style="font-size: 13px; color: var(--txt2); margin-bottom: 20px;">Upload a CSV file to add questions directly to this exam. Questions will also be saved to the subject's question bank.</p>
+    
+    <form id="uploadExamForm" method="POST" enctype="multipart/form-data">
+      <div class="fg">
+        <label>Select CSV File</label>
+        <input type="file" name="csv_file" accept=".csv" required>
+      </div>
+
+      <div style="background: rgba(99,102,241,0.05); border: 1px solid rgba(99,102,241,0.2); border-radius: 8px; padding: 12px; margin-bottom: 20px;">
+        <div style="font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
+          <svg style="width: 14px; height: 14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+          CSV FORMAT HINT
+        </div>
+        <div style="font-size: 10px; color: var(--txt2); line-height: 1.5;">
+          Required columns: <code>questions</code>, <code>option1</code>, <code>option2</code>, <code>option3</code>, <code>option4</code>, <code>correct answer</code>.<br>
+          Optional: <code>difficulty</code> (easy/medium/hard), <code>section</code> (A, B, or C), <code>marks</code>.
+        </div>
+      </div>
+
+      <div class="mact">
+        <button type="button" class="btn-cancel" onclick="closeModal('uploadExamQuestionsModal')">Cancel</button>
+        <button type="submit" class="btn-save">Upload & Assign</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 </body>
 </html>
