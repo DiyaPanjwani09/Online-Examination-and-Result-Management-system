@@ -7,6 +7,7 @@ import time
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
+
 auth_bp = Blueprint('auth_bp', __name__)
 
 # ─── Email configuration ───────────
@@ -64,13 +65,15 @@ def faculty_login():
             flash("Please fill all fields.", "danger")
             return render_template("faculty_login.html")
 
+        # ONLY faculty login here. Admin has its own MFA-enabled login.
         user = get_user_by_username(username, "faculty")
+        role = "faculty"
 
         if user and check_password_hash(user["password"], password):
             session.clear()
             session["user_id"] = user["id"]
             session["username"] = user["username"]
-            session["role"] = "faculty"
+            session["role"] = role
             return redirect(url_for("faculty_bp.faculty_dashboard"))
         else:
             flash("Invalid Credentials.", "danger")

@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for, flash
+﻿from flask import Blueprint, render_template, session, redirect, url_for, flash
 from database import get_connection
 
 faculty_analysis_bp = Blueprint('faculty_analysis_bp', __name__)
@@ -13,14 +13,16 @@ def faculty_analysis():
     cursor = conn.cursor()
     
     # Get faculty details
-    faculty = cursor.execute("SELECT * FROM faculty_details WHERE user_id = ?", (session["user_id"],)).fetchone()
+    cursor.execute("SELECT * FROM faculty_details WHERE user_id = %s", (session["user_id"],))
+    faculty = cursor.fetchone()
     if not faculty:
         conn.close()
         flash("Faculty profile not found.", "danger")
         return redirect(url_for("auth_bp.faculty_login"))
 
     # Get subjects taught by this faculty
-    subjects = cursor.execute("SELECT id, subject_name FROM subjects WHERE faculty_id = ?", (faculty["id"],)).fetchall()
+    cursor.execute("SELECT id, subject_name FROM subjects WHERE faculty_id = %s", (faculty["id"],))
+    subjects = cursor.fetchall()
     subject_ids = [s["id"] for s in subjects]
     
     if not subject_ids:
@@ -32,7 +34,7 @@ def faculty_analysis():
                                student_trends=[], 
                                class_avg=0)
 
-    placeholders = ','.join('?' for _ in subject_ids)
+    placeholders = ','.join('%s' for _ in subject_ids)
     
     # 1. Exam Performance (Average Scores per Exam)
     exam_performance = cursor.execute(f"""
@@ -99,7 +101,7 @@ def faculty_exam_report(course_code):
                (SELECT MIN(CAST(score AS FLOAT) / e.total_marks * 100) FROM exam_attempts WHERE course_code = e.course_code AND completed = 1) as min_pct
         FROM exams e
         JOIN subjects s ON e.subject_id = s.id
-        WHERE e.course_code = ?
+        WHERE e.course_code = %s
     """, (course_code,)).fetchone()
     
     if not exam:
@@ -110,26 +112,27 @@ def faculty_exam_report(course_code):
     # 2. Score Distribution (Histogram data)
     distribution = cursor.execute("""
         SELECT 
-            SUM(CASE WHEN (CAST(score AS FLOAT) / ? * 100) < 40 THEN 1 ELSE 0 END) as fail,
-            SUM(CASE WHEN (CAST(score AS FLOAT) / ? * 100) BETWEEN 40 AND 60 THEN 1 ELSE 0 END) as average,
-            SUM(CASE WHEN (CAST(score AS FLOAT) / ? * 100) BETWEEN 60 AND 80 THEN 1 ELSE 0 END) as good,
-            SUM(CASE WHEN (CAST(score AS FLOAT) / ? * 100) >= 80 THEN 1 ELSE 0 END) as excellent
+            SUM(CASE WHEN (CAST(score AS FLOAT) / %s * 100) < 40 THEN 1 ELSE 0 END) as fail,
+            SUM(CASE WHEN (CAST(score AS FLOAT) / %s * 100) BETWEEN 40 AND 60 THEN 1 ELSE 0 END) as average,
+            SUM(CASE WHEN (CAST(score AS FLOAT) / %s * 100) BETWEEN 60 AND 80 THEN 1 ELSE 0 END) as good,
+            SUM(CASE WHEN (CAST(score AS FLOAT) / %s * 100) >= 80 THEN 1 ELSE 0 END) as excellent
         FROM exam_attempts
-        WHERE course_code = ? AND completed = 1
+        WHERE course_code = %s AND completed = 1
     """, (exam['total_marks'], exam['total_marks'], exam['total_marks'], exam['total_marks'], course_code)).fetchone()
 
     # 3. List of Student Performances for this Exam
     students = cursor.execute("""
         SELECT sd.full_name, sd.enrollment_no, ea.score, 
-               (CAST(ea.score AS FLOAT) / ? * 100) as pct,
+               (CAST(ea.score AS FLOAT) / %s * 100) as pct,
                ea.attempt_time
         FROM exam_attempts ea
         JOIN student_details sd ON ea.enrollment_no = sd.enrollment_no
-        WHERE ea.course_code = ? AND ea.completed = 1
+        WHERE ea.course_code = %s AND ea.completed = 1
         ORDER BY score DESC
     """, (exam['total_marks'], course_code)).fetchall()
 
-    faculty = cursor.execute("SELECT * FROM faculty_details WHERE user_id = ?", (session["user_id"],)).fetchone()
+    cursor.execute("SELECT * FROM faculty_details WHERE user_id = %s", (session["user_id"],))
+    faculty = cursor.fetchone()
     
     conn.close()
     
@@ -146,9 +149,11 @@ def faculty_powerbi():
         
     conn = get_connection()
     cursor = conn.cursor()
-    faculty = cursor.execute("SELECT * FROM faculty_details WHERE user_id = ?", (session["user_id"],)).fetchone()
+    cursor.execute("SELECT * FROM faculty_details WHERE user_id = %s", (session["user_id"],))
+    faculty = cursor.fetchone()
     conn.close()
     
     return render_template('faculty_powerbi.html', faculty=dict(faculty))
+
 
 

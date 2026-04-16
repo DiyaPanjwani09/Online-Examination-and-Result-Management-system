@@ -15,47 +15,48 @@ def student_dashboard():
         return redirect(url_for("auth_bp.student_login"))
 
     conn = get_connection()
-    # 1. Fetch student profile details
-    student = conn.execute("""
+    _cur = conn.cursor()
+    _cur.execute("""
         SELECT enrollment_no, full_name, branch, semester 
         FROM student_details 
-        WHERE user_id = ?
-    """, (session["user_id"],)).fetchone()
+        WHERE user_id = %s
+    """, (session["user_id"],))
+    student = _cur.fetchone()
 
     if not student:
         conn.close()
         flash("Student profile not found. Please contact administration.", "danger")
-        # Do not redirect to login, as that would cause a loop. 
-        # Redirect to a logout page or just clear session if invalid.
         session.clear()
         return redirect(url_for("auth_bp.student_login"))
 
     enrollment_no = student["enrollment_no"]
 
     # 2. Fetch assigned subjects
-    subjects = conn.execute("""
+    _cur.execute("""
         SELECT s.subject_name, f.full_name AS faculty_name, f.department
         FROM student_subjects ss
         JOIN exams e ON ss.course_code = e.course_code
         JOIN subjects s ON e.subject_id = s.id
         LEFT JOIN faculty_details f ON s.faculty_id = f.id
-        WHERE ss.enrollment_no = ?
-    """, (enrollment_no,)).fetchall()
+        WHERE ss.enrollment_no = %s
+    """, (enrollment_no,))
+    subjects = _cur.fetchall()
 
     # 3. Get exam statistics
-    exam_stats = conn.execute("""
+    _cur.execute("""
         SELECT 
             COUNT(e.course_code) AS total_exams,
             SUM(CASE WHEN ea.completed = 1 THEN 1 ELSE 0 END) AS completed_exams
         FROM exams e
         JOIN student_subjects ss ON e.course_code = ss.course_code
         LEFT JOIN exam_attempts ea 
-            ON ea.course_code = e.course_code AND ea.enrollment_no = ?
-        WHERE ss.enrollment_no = ?
-    """, (enrollment_no, enrollment_no)).fetchone()
+            ON ea.course_code = e.course_code AND ea.enrollment_no = %s
+        WHERE ss.enrollment_no = %s
+    """, (enrollment_no, enrollment_no))
+    exam_stats = _cur.fetchone()
 
-    total_exams = exam_stats["total_exams"] if exam_stats["total_exams"] else 0
-    completed_exams = exam_stats["completed_exams"] if exam_stats["completed_exams"] else 0
+    total_exams = exam_stats["total_exams"] if exam_stats and exam_stats["total_exams"] else 0
+    completed_exams = exam_stats["completed_exams"] if exam_stats and exam_stats["completed_exams"] else 0
     upcoming_exams = total_exams - completed_exams
 
     conn.close()
@@ -75,7 +76,8 @@ def student_exams():
         return redirect(url_for("auth_bp.student_login"))
     
     conn = get_connection()
-    exams_data = conn.execute("""
+    _cur = conn.cursor()
+    _cur.execute("""
         SELECT 
             s.subject_name,
             f.full_name AS faculty_name,
@@ -92,8 +94,9 @@ def student_exams():
         JOIN subjects s ON e.subject_id = s.id
         LEFT JOIN faculty_details f ON s.faculty_id = f.id
         LEFT JOIN exam_attempts ea ON e.course_code = ea.course_code AND ss.enrollment_no = ea.enrollment_no
-        WHERE ss.enrollment_no = (SELECT enrollment_no FROM student_details WHERE user_id = ?)
-    """, (session["user_id"],)).fetchall()
+        WHERE ss.enrollment_no = (SELECT enrollment_no FROM student_details WHERE user_id = %s)
+    """, (session["user_id"],))
+    exams_data = _cur.fetchall()
     
     # Check scheduling status
     now = datetime.now()
@@ -102,13 +105,11 @@ def student_exams():
         d = dict(row)
         d['status'] = 'open'
         
-        # Helper to parse datetime strings
         def parse_dt(dt_str):
             if not dt_str: return None
             try:
-                # Handle both 'YYYY-MM-DD HH:MM:SS' and 'YYYY-MM-DDTHH:MM' formats
                 s = dt_str.replace('T', ' ')
-                if len(s) > 19: s = s[:19] # Trim microseconds if any
+                if len(s) > 19: s = s[:19]
                 return datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
             except:
                 try: return datetime.strptime(dt_str.replace('T', ' '), "%Y-%m-%d %H:%M")
@@ -123,10 +124,11 @@ def student_exams():
             d['status'] = 'expired'
         exams_with_status.append(d)
     
-    student = conn.execute("SELECT * FROM student_details WHERE user_id = ?", (session["user_id"],)).fetchone()
+    _cur.execute("SELECT enrollment_no, full_name, branch, semester FROM student_details WHERE user_id = %s", (session["user_id"],))
+    student = _cur.fetchone()
     conn.close()
 
-    return render_template("student_exams.html", exams=exams_with_status, student=dict(student))
+    return render_template("student_exams.html", exams=exams_with_status, student=dict(student) if student else {})
 
 @student_bp.route("/exam")
 def exam_page():
@@ -139,35 +141,42 @@ def exam_page():
         return redirect(url_for("student_bp.student_dashboard"))
 
     conn = get_connection()
-    exam = conn.execute("SELECT * FROM exams WHERE course_code = ?", (course_code,)).fetchone()
-    if not exam:
-        
-        conn.close()
-        flash("Exam not found.", "danger")
-        return redirect(url_for("student_bp.student_dashboard"))
+    _cur = conn.cursor()
     
-    # Check blacklist
-    student = conn.execute("SELECT enrollment_no FROM student_details WHERE user_id = ?", (session["user_id"],)).fetchone()
+    # Fetch student details first
+    _cur.execute("SELECT enrollment_no FROM student_details WHERE user_id = %s", (session["user_id"],))
+    student = _cur.fetchone()
     if not student:
         conn.close()
         flash("Student profile not found.", "danger")
         return redirect(url_for("student_bp.student_dashboard"))
         
-    blacklisted = conn.execute("SELECT id FROM exam_blacklist WHERE course_code = ? AND enrollment_no = ?", (course_code, student["enrollment_no"])).fetchone()
-    if blacklisted:
+    enrollment_no = student["enrollment_no"]
+
+    _cur.execute("SELECT * FROM exams WHERE course_code = %s", (course_code,))
+    exam = _cur.fetchone()
+    if not exam:
+        conn.close()
+        flash("Exam not found.", "danger")
+        return redirect(url_for("student_bp.student_dashboard"))
+    
+    # Check blacklist
+    _cur.execute("SELECT id FROM exam_blacklist WHERE course_code = %s AND enrollment_no = %s", (course_code, enrollment_no))
+    if _cur.fetchone():
         conn.close()
         flash("You are blacklisted from this exam. Please contact your faculty.", "danger")
         return redirect(url_for("student_bp.student_dashboard"))
 
     # Check enrollment
-    enrolled = conn.execute("SELECT enrollment_no FROM student_subjects WHERE enrollment_no = ? AND course_code = ?", (student["enrollment_no"], course_code)).fetchone()
-    if not enrolled:
+    _cur.execute("SELECT enrollment_no FROM student_subjects WHERE enrollment_no = %s AND course_code = %s", (enrollment_no, course_code))
+    if not _cur.fetchone():
         conn.close()
         flash("You are not enrolled for this specific course/exam.", "danger")
         return redirect(url_for("student_bp.student_dashboard"))
         
     # Check if already completed
-    attempt = conn.execute("SELECT completed FROM exam_attempts WHERE enrollment_no = ? AND course_code = ?", (student["enrollment_no"], course_code)).fetchone()
+    _cur.execute("SELECT completed FROM exam_attempts WHERE enrollment_no = %s AND course_code = %s", (enrollment_no, course_code))
+    attempt = _cur.fetchone()
     if attempt and attempt["completed"] == 1:
         conn.close()
         flash("You have already completed this exam.", "warning")
@@ -176,11 +185,9 @@ def exam_page():
     # Strict scheduling check
     now = datetime.now()
     
-    # Helper to parse datetime strings safely
     def parse_dt(dt_str):
         if not dt_str: return None
         try:
-            # Handle both 'YYYY-MM-DD HH:MM:SS' and 'YYYY-MM-DDTHH:MM' formats
             s = dt_str.replace('T', ' ')
             if len(s) > 19: s = s[:19]
             return datetime.strptime(s, "%Y-%m-%d %H:%M:%S")
@@ -188,8 +195,8 @@ def exam_page():
             try: return datetime.strptime(dt_str.replace('T', ' '), "%Y-%m-%d %H:%M")
             except: return None
 
-    start = parse_dt(exam.get("start_time"))
-    end = parse_dt(exam.get("end_time"))
+    start = parse_dt(exam["start_time"])
+    end = parse_dt(exam["end_time"])
 
     if start and now < start:
         conn.close()
@@ -200,36 +207,39 @@ def exam_page():
         flash("This exam has already expired.", "danger")
         return redirect(url_for("student_bp.student_dashboard"))
 
-
     subject_id = exam["subject_id"]
-    subject = conn.execute("SELECT subject_name FROM subjects WHERE id = ?", (subject_id,)).fetchone()
+    _cur.execute("SELECT subject_name FROM subjects WHERE id = %s", (subject_id,))
+    subject = _cur.fetchone()
     subject_name = subject["subject_name"] if subject else "Unknown Subject"
 
     try:
         # Check if specific questions are assigned to this exam
-        exam_q_count = conn.execute("SELECT COUNT(*) FROM exam_questions WHERE course_code = ?", (course_code,)).fetchone()[0]
+        _cur.execute("SELECT COUNT(*) as count FROM exam_questions WHERE course_code = %s", (course_code,))
+        exam_q_count = _cur.fetchone()["count"]
         
         if exam_q_count > 0:
             # Fetch only assigned questions
-            questions_db = conn.execute("""
+            _cur.execute("""
                 SELECT q.*, eq.section 
                 FROM questions q
                 JOIN exam_questions eq ON q.id = eq.question_id
-                WHERE eq.course_code = ?
-            """, (course_code,)).fetchall()
+                WHERE eq.course_code = %s
+            """, (course_code,))
+            questions_db = _cur.fetchall()
         else:
-            # Fallback (or default behavior) - show all questions for the subject
-            questions_db = conn.execute("SELECT * FROM questions WHERE subject_id = ?", (subject_id,)).fetchall()
+            # Fallback - show all questions for the subject
+            _cur.execute("SELECT * FROM questions WHERE subject_id = %s", (subject_id,))
+            questions_db = _cur.fetchall()
     except Exception:
         questions_db = []
 
     questions = []
     for q in questions_db:
-        options_db = conn.execute("SELECT id, option_text, is_correct FROM options WHERE question_id = ?", (q["id"],)).fetchall()
-        options = [dict(row) for row in options_db]
+        _cur.execute("SELECT id, option_text, is_correct FROM options WHERE question_id = %s", (q["id"],))
+        options_db = _cur.fetchall()
         
         q_dict = dict(q)
-        q_dict["options"] = options
+        q_dict["options"] = [dict(row) for row in options_db]
         questions.append(q_dict)
 
     conn.close()
@@ -245,15 +255,18 @@ def submit_exam():
     score = data.get("score")
 
     conn = get_connection()
-    student = conn.execute("SELECT enrollment_no FROM student_details WHERE user_id = ?", (session["user_id"],)).fetchone()
+    _cur = conn.cursor()
+    _cur.execute("SELECT enrollment_no FROM student_details WHERE user_id = %s", (session["user_id"],))
+    student = _cur.fetchone()
     
     if not student:
         conn.close()
         return {"success": False, "message": "Student not found"}, 404
 
     # Check if attempt already exists and update or create
-    existing_attempt = conn.execute("SELECT id, completed FROM exam_attempts WHERE enrollment_no = ? AND course_code = ?", 
-                                    (student["enrollment_no"], course_code)).fetchone()
+    _cur.execute("SELECT id, completed FROM exam_attempts WHERE enrollment_no = %s AND course_code = %s", 
+                 (student["enrollment_no"], course_code))
+    existing_attempt = _cur.fetchone()
     
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if existing_attempt:
@@ -261,9 +274,9 @@ def submit_exam():
             conn.close()
             return {"success": False, "message": "Exam already completed"}, 400
             
-        conn.execute("UPDATE exam_attempts SET score = ?, completed = 1, attempt_time = ? WHERE id = ?", (score, now, existing_attempt["id"]))
+        _cur.execute("UPDATE exam_attempts SET score = %s, completed = 1, attempt_time = %s WHERE id = %s", (score, now, existing_attempt["id"]))
     else:
-        conn.execute("INSERT INTO exam_attempts (enrollment_no, course_code, score, completed, attempt_time) VALUES (?, ?, ?, 1, ?)", 
+        _cur.execute("INSERT INTO exam_attempts (enrollment_no, course_code, score, completed, attempt_time) VALUES (%s, %s, %s, 1, %s)", 
                      (student["enrollment_no"], course_code, score, now))
     
     conn.commit()
@@ -280,27 +293,33 @@ def blacklist_student():
     course_code = data.get("course_code")
     
     conn = get_connection()
-    student = conn.execute("SELECT enrollment_no FROM student_details WHERE user_id = ?", (session["user_id"],)).fetchone()
+    _cur = conn.cursor()
+    _cur.execute("SELECT enrollment_no FROM student_details WHERE user_id = %s", (session["user_id"],))
+    student = _cur.fetchone()
     if not student:
         conn.close()
         return {"success": False, "message": "Student not found"}, 404
         
     # Check if already blacklisted
-    existing = conn.execute("SELECT id FROM exam_blacklist WHERE course_code = ? AND enrollment_no = ?", (course_code, student["enrollment_no"])).fetchone()
+    _cur.execute("SELECT id FROM exam_blacklist WHERE course_code = %s AND enrollment_no = %s", (course_code, student["enrollment_no"]))
+    existing = _cur.fetchone()
+    
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     if not existing:
-        conn.execute("INSERT INTO exam_blacklist (course_code, enrollment_no) VALUES (?, ?)", (course_code, student["enrollment_no"]))
-        
+        _cur.execute("INSERT INTO exam_blacklist (course_code, enrollment_no) VALUES (%s, %s)", (course_code, student["enrollment_no"]))
+    
     # Also mark as completed with 0 score (or keep existing)
-    existing_attempt = conn.execute("SELECT id FROM exam_attempts WHERE course_code = ? AND enrollment_no = ?", (course_code, student["enrollment_no"])).fetchone()
+    _cur.execute("SELECT id FROM exam_attempts WHERE course_code = %s AND enrollment_no = %s", (course_code, student["enrollment_no"]))
+    existing_attempt = _cur.fetchone()
+    
     if not existing_attempt:
-        conn.execute("INSERT INTO exam_attempts (enrollment_no, course_code, score, completed, attempt_time) VALUES (?, ?, 0, 1, ?)", (student["enrollment_no"], course_code, now))
-        
+        _cur.execute("INSERT INTO exam_attempts (enrollment_no, course_code, score, completed, attempt_time) VALUES (%s, %s, 0, 1, %s)", 
+                     (student["enrollment_no"], course_code, now))
+    
     conn.commit()
     conn.close()
     
     return {"success": True}
-
 
 @student_bp.route("/result")
 def result_page():
