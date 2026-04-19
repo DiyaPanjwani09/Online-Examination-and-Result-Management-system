@@ -1,5 +1,17 @@
 # 📚 Online Examination and Result Management System
 
+## 🤝 Collaboration
+
+This project is developed in **collaboration with Ayush Baghel**.
+This work is based on and extended from the following repository:
+
+* GitHub ID: [https://github.com/Ayushbaghel1901](https://github.com/Ayushbaghel1901)
+* Reference Repository: [https://github.com/Ayushbaghel1901/EXAM](https://github.com/Ayushbaghel1901/EXAM)
+
+---
+
+## 📌 Project Overview
+
 This project is a **web-based Online Examination and Result Management System** designed to streamline the process of conducting exams, managing students, and generating results efficiently. The system supports multiple user roles including **Admin, Faculty, and Students**, making the entire examination workflow automated and organized.
 
 ## 🚀 Features
@@ -43,16 +55,6 @@ Online-Examination-and-Result-Management-system
 ├── README.md
 └── requirements.txt
 ```
-
-## 🤝 Collaboration
-
-This project is developed in **collaboration with Ayush Baghel**.
-Some parts and initial structure are inspired from and extended using the following repository:
-
-* Ayush Baghel GitHub: [https://github.com/Ayushbaghel1901](https://github.com/Ayushbaghel1901)
-* Reference Repository: [https://github.com/Ayushbaghel1901/EXAM](https://github.com/Ayushbaghel1901/EXAM)
-
-This project further enhances and integrates the system into a **fully functional Online Examination and Result Management platform**.
 
 ## 🎯 Objective
 
@@ -105,8 +107,3 @@ GitHub: [https://github.com/DiyaPanjwani09](https://github.com/DiyaPanjwani09)
 
 **Ayush Baghel**
 GitHub: [https://github.com/Ayushbaghel1901](https://github.com/Ayushbaghel1901)
-Reference Project: [https://github.com/Ayushbaghel1901/EXAM](https://github.com/Ayushbaghel1901/EXAM)
-
----
-
-
