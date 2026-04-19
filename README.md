@@ -1,103 +1,120 @@
-# 📝 Online Examination and Result Management System
+# 📚 Online Examination and Result Management System
 
-A full-stack web application for conducting online exams and managing results, built with **Python Flask** and an SQL database.
-
----
+This project is a **web-based Online Examination and Result Management System** designed to streamline the process of conducting exams, managing students, and generating results efficiently. The system supports multiple user roles including **Admin, Faculty, and Students**, making the entire examination workflow automated and organized.
 
 ## 🚀 Features
 
-- **Role-Based Authentication**: Separate portals for Admin, Faculty, and Students
-- **Exam Management**: Faculty can create exams, add questions (including CSV bulk upload), and set time limits
-- **Randomized Question Delivery**: Each student receives a unique, randomized set of questions per exam session
-- **Result Tracking**: Automated result calculation and result history per student
-- **Faculty Analytics**: Performance analysis and insights dashboard for faculty
-- **Admin Dashboard**: User management and full system oversight
+* 👨‍🎓 Student Registration & Login
+* 👩‍🏫 Faculty Dashboard
+* 🛠️ Admin Panel
+* 📝 Online Exam Creation
+* ⏱️ Timed Examinations
+* 📊 Automatic Result Generation
+* 📁 Question Bank Management
+* 📌 Subject-wise Exams
+* 🔐 Secure Authentication System
+* 📈 Result Management System
 
----
+## 🧑‍💻 Tech Stack
 
-## 🛠️ Tech Stack
+**Frontend**
 
-| Layer      | Technology              |
-|------------|-------------------------|
-| Backend    | Python, Flask           |
-| Database   | SQLite (via `database.py`) |
-| Frontend   | HTML, CSS, JavaScript   |
-| Deployment | Procfile (Gunicorn)     |
+* HTML
+* CSS
+* JavaScript
 
----
+**Backend**
 
-## 📁 Project Structure
+* Python (Flask)
+
+**Database**
+
+* SQL (SQLite / MySQL)
+
+## 📂 Project Structure
 
 ```
-├── app.py                  # Main Flask application entry point
-├── database.py             # Database initialization and models
-├── requirements.txt        # Python dependencies
-├── Procfile                # Deployment configuration
-├── routes/
-│   ├── auth.py             # Authentication (login/logout)
-│   ├── student.py          # Student exam-taking routes
-│   ├── faculty.py          # Faculty exam management routes
-│   ├── faculty_analysis.py # Faculty result analysis routes
-│   └── admin.py            # Admin management routes
-├── static/                 # CSS, JS, and image assets
-└── templates/              # HTML Jinja2 templates
+Online-Examination-and-Result-Management-system
+│
+├── static/
+├── templates/
+├── app.py
+├── database/
+├── README.md
+└── requirements.txt
 ```
 
----
+## 🤝 Collaboration
 
-## ⚙️ Getting Started
+This project is developed in **collaboration with Ayush Baghel**.
+Some parts and initial structure are inspired from and extended using the following repository:
 
-### Prerequisites
+* Ayush Baghel GitHub: [https://github.com/Ayushbaghel1901](https://github.com/Ayushbaghel1901)
+* Reference Repository: [https://github.com/Ayushbaghel1901/EXAM](https://github.com/Ayushbaghel1901/EXAM)
 
-- Python 3.8+
-- pip
+This project further enhances and integrates the system into a **fully functional Online Examination and Result Management platform**.
 
-### Installation
+## 🎯 Objective
+
+The main objective of this project is to:
+
+* Reduce manual exam handling
+* Automate result calculation
+* Provide secure online exam platform
+* Improve efficiency for institutions
+* Manage students, faculty and exams in one system
+
+## ▶️ How to Run
+
+1. Clone the repository
 
 ```bash
-# 1. Clone the repository
 git clone https://github.com/DiyaPanjwani09/Online-Examination-and-Result-Management-system.git
+```
+
+2. Navigate to project folder
+
+```bash
 cd Online-Examination-and-Result-Management-system
+```
 
-# 2. Create and activate a virtual environment
-python -m venv venv
-venv\Scripts\activate       # Windows
-# source venv/bin/activate  # macOS/Linux
+3. Install dependencies
 
-# 3. Install dependencies
+```bash
 pip install -r requirements.txt
+```
 
-# 4. Run the application
+4. Run the Flask app
+
+```bash
 python app.py
 ```
 
-The app will be available at **http://localhost:5006**
+5. Open in browser
+
+```
+http://127.0.0.1:5000
+```
+
+## 👩‍💻 Author
+
+**Diya Panjwani**
+GitHub: [https://github.com/DiyaPanjwani09](https://github.com/DiyaPanjwani09)
+
+## 🤝 Co-Contributor
+
+**Ayush Baghel**
+GitHub: [https://github.com/Ayushbaghel1901](https://github.com/Ayushbaghel1901)
+Reference Project: [https://github.com/Ayushbaghel1901/EXAM](https://github.com/Ayushbaghel1901/EXAM)
 
 ---
 
-## 👤 Default Roles
+If you'd like, I can also:
 
-| Role    | Access                                      |
-|---------|---------------------------------------------|
-| Admin   | Manage users, view all exams and results    |
-| Faculty | Create exams, upload questions, view analytics |
-| Student | Take exams, view own results and history    |
+* add screenshots
+* add badges
+* make it more professional
+* add installation GIF
+* add deployment steps
 
----
-
-## 📊 How It Works
-
-1. **Admin** sets up the system by registering faculty and students.
-2. **Faculty** creates an exam for a subject, uploads questions via CSV or manually, and publishes it.
-3. **Students** log in, take the exam (with randomized questions), and instantly receive their results.
-4. **Faculty** can review class-wide performance in the analytics dashboard.
-
----
-
-## 📄 License
-
-This project is open-source and available under the [MIT License](LICENSE).
-
----
-
-*Developed as an academic project for streamlining the examination process.*
+Just tell me.
