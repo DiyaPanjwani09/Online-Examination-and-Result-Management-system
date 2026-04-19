@@ -109,12 +109,4 @@ Reference Project: [https://github.com/Ayushbaghel1901/EXAM](https://github.com/
 
 ---
 
-If you'd like, I can also:
 
-* add screenshots
-* add badges
-* make it more professional
-* add installation GIF
-* add deployment steps
-
-Just tell me.
