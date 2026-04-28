@@ -186,6 +186,7 @@ body{overflow-x:hidden;overflow-y:hidden}
 .wrap{overflow:hidden}
 
 </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
 <div class="bg-grid"></div>
@@ -228,9 +229,10 @@ body{overflow-x:hidden;overflow-y:hidden}
     <svg id="iconLight" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px;flex-shrink:0;color:#fbbf24;display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
     <span id="themeLabel" style="flex:1">Light Mode</span>
   </button>
-<a href="{{ url_for('auth_bp.logout') }}" class="nav-a danger">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign Out
-  </a>
+<a href="{{ url_for('auth_bp.logout') }}" title="Sign Out" style="display:flex; align-items:center; gap:12px; padding:12px 16px; color:#ef4444; text-decoration:none; border-radius:8px; font-weight:500; transition:all 0.2s; margin-top: auto;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </a>
 </aside>
 
 <div class="wrap">
@@ -395,17 +397,20 @@ body{overflow-x:hidden;overflow-y:hidden}
       <h2><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Bulk Question Upload</h2>
       <button class="mcls" onclick="document.getElementById('bulkModal').classList.remove('open')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
-    <form action="{{ url_for('faculty_bp.upload_questions_subject_csv', subject_id=subject.id) }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ url_for('faculty_bp.upload_questions_subject_file', subject_id=subject.id) }}" method="POST" enctype="multipart/form-data">
       <div style="background:rgba(99,102,241,.05);padding:14px;border-radius:10px;margin-bottom:20px;font-size:12.5px;color:var(--txt2);line-height:1.5;border:1px dashed var(--border-h)">
-        Upload a single CSV file containing all questions.
+        Upload a **CSV** or **Excel (.xlsx)** file containing your questions.
         <div style="margin-top:8px;font-family:monospace;font-size:11px;background:rgba(0,0,0,.2);padding:8px;border-radius:6px">
-          Columns: questions, option1, option2, option3, option4, correct answer, difficulty
+          Columns: question_text, option_1, option_2, option_3, option_4, correct_answer, difficulty
+        </div>
+        <div style="margin-top:6px;font-size:11px;color:var(--txt3)">
+          * Correct answer can be the option number (1-4) or the full text.
         </div>
       </div>
       
       <div class="fg">
-        <label>Select CSV File</label>
-        <input type="file" name="csv_file" accept=".csv" style="padding:10px;border:1px dashed var(--border-h);margin-bottom:8px" required>
+        <label>Select File (.csv, .xlsx)</label>
+        <input type="file" name="csv_file" accept=".csv, .xlsx" style="padding:10px;border:1px dashed var(--border-h);margin-bottom:8px" required>
       </div>
 
       <div class="mact">
@@ -488,10 +493,10 @@ function filterDifficulty(diff, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
   
-  const cards = document.querySelectorAll('.q-card');
+  const cards = document.querySelectorAll('.qcard');
   cards.forEach(card => {
     if (diff === 'all' || card.dataset.difficulty === diff) {
-      card.style.display = 'flex';
+      card.style.display = 'block';
     } else {
       card.style.display = 'none';
     }
@@ -527,6 +532,10 @@ function filterDifficulty(diff, btn) {
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { animation: spin 1s linear infinite; }
 </style>
+
+<!-- Dark/Light Mode Toggle Button -->
+<button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" title="Switch to Light Mode">🌙</button>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>
 </html>
 

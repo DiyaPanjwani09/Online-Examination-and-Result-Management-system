@@ -367,6 +367,7 @@ body::after {
 .flash-success { background: rgba(5, 150, 105, 0.8); color: #fff; border: 1px solid #10b981; }
 .flash-info { background: rgba(79, 70, 229, 0.8); color: #fff; border: 1px solid #6366f1; }
 </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
 
@@ -555,6 +556,10 @@ body::after {
       <a href="{{ url_for('auth_bp.student_login') }}" class="auth-link">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
         Student Portal
+      </a>
+      <a href="{{ url_for('admin_bp.admin_dashboard') }}" class="auth-link" style="color: var(--primary);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Admin Portal
       </a>
     </div>
 
@@ -793,5 +798,9 @@ animate();
 
 </script>
 
+
+<!-- Dark/Light Mode Toggle Button -->
+<button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" title="Switch to Light Mode">🌙</button>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>
 </html>

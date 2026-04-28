@@ -191,6 +191,7 @@ body{overflow-x:hidden;overflow-y:hidden}
 .wrap{overflow:hidden}
 
 </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
 <div class="bg-grid"></div>
@@ -218,7 +219,10 @@ body{overflow-x:hidden;overflow-y:hidden}
     <a href="{{ url_for('faculty_bp.faculty_exams') }}" class="nav-a">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>Exams
     </a>
-    <a href="{{ url_for('faculty_analysis_bp.faculty_analysis') }}" class="nav-a">
+    <a href="{{ url_for('faculty_bp.schedule_exam') }}" class="nav-a">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>Schedule Exam
+    </a>
+        <a href="{{ url_for('faculty_analysis_bp.faculty_analysis') }}" class="nav-a">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.21 15.89A10 10 0 1 1 8 2.83M22 12A10 10 0 0 0 12 2v10z"/></svg>Performance Analysis
     </a>
     <a href="{{ url_for('faculty_bp.faculty_results') }}" class="nav-a">
@@ -235,9 +239,10 @@ body{overflow-x:hidden;overflow-y:hidden}
     <svg id="iconLight" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:17px;height:17px;flex-shrink:0;color:#fbbf24;display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
     <span id="themeLabel" style="flex:1">Light Mode</span>
   </button>
-<a href="{{ url_for('auth_bp.logout') }}" class="nav-a danger">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign Out
-  </a>
+<a href="{{ url_for('auth_bp.logout') }}" title="Sign Out" style="display:flex; align-items:center; gap:12px; padding:12px 16px; color:#ef4444; text-decoration:none; border-radius:8px; font-weight:500; transition:all 0.2s; margin-top: auto;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </a>
 </aside>
 
 <div class="wrap">
@@ -272,27 +277,43 @@ body{overflow-x:hidden;overflow-y:hidden}
     <div class="toolbar">
       <div class="search-box">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input type="text" id="sSrch" placeholder="Search name or enrollment…" oninput="filterStudents()">
+        <input type="text" id="sSrch" placeholder="Quick Search (Name, Enrollment...)" oninput="filterStudents()">
       </div>
-      <select class="filter-sel" id="semFilter" onchange="filterStudents()">
-        <option value="">All Semesters</option>
-        {% set sems = [] %}
-        {% for s in students %}
-          {% if s.student_semester not in sems %}{% if sems.append(s.student_semester) %}{% endif %}
-          <option value="{{ s.student_semester }}">Semester {{ s.student_semester }}</option>
-          {% endif %}
-        {% endfor %}
-      </select>
-      <select class="filter-sel" id="branchFilter" onchange="filterStudents()">
-        <option value="">All Branches</option>
-        {% set brs = [] %}
-        {% for s in students %}
-          {% if s.student_branch not in brs %}{% if brs.append(s.student_branch) %}{% endif %}
-          <option value="{{ s.student_branch }}">{{ s.student_branch }}</option>
-          {% endif %}
-        {% endfor %}
-      </select>
-      <span class="count-pill" id="cntPill">{{ students|length }} student{{ 's' if students|length != 1 else '' }}</span>
+      
+      <div style="display:flex; gap:8px; flex-wrap:wrap">
+        <select class="filter-sel" id="semFilter" onchange="filterStudents()">
+          <option value="">Semester: All</option>
+          {% for sem in filter_semesters %}
+          <option value="{{ sem }}">Semester {{ sem }}</option>
+          {% endfor %}
+        </select>
+
+        <select class="filter-sel" id="branchFilter" onchange="filterStudents()">
+          <option value="">Branch: All</option>
+          {% for br in filter_branches %}
+          <option value="{{ br }}">{{ br }}</option>
+          {% endfor %}
+        </select>
+
+        <select class="filter-sel" id="subjectFilter" onchange="filterStudents()">
+          <option value="">Subject: All</option>
+          {% for subj in filter_subjects %}
+          <option value="{{ subj|lower }}">{{ subj }}</option>
+          {% endfor %}
+        </select>
+
+        <select class="filter-sel" id="statusFilter" onchange="filterStudents()">
+          <option value="">Status: All</option>
+          <option value="enrolled">Enrolled</option>
+          <option value="unassigned">Not Enrolled</option>
+        </select>
+
+        <button class="btn btn-primary" style="background:var(--surface2); color:var(--rose); border:1px solid rgba(244,63,94,.2); box-shadow:none; padding:9px 12px" onclick="clearFilters()" title="Reset Filters">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        </button>
+      </div>
+
+      <span class="count-pill" id="cntPill" style="margin-left:auto">{{ students|length }} students</span>
     </div>
 
     <div class="panel">
@@ -312,7 +333,9 @@ body{overflow-x:hidden;overflow-y:hidden}
           {% for s in students %}
           <tr data-name="{{ s.full_name|lower }} {{ s.enrollment_no|lower }}"
               data-sem="{{ s.student_semester }}"
-              data-branch="{{ s.student_branch }}">
+              data-branch="{{ s.student_branch }}"
+              data-status="{{ 'enrolled' if s.subject_name else 'unassigned' }}"
+              data-subjects="{{ s.subject_name|lower if s.subject_name else '' }}">
             <td style="color:var(--txt3);font-size:12px">{{ loop.index }}</td>
             <td>
               <div class="s-name-col">
@@ -426,14 +449,14 @@ body{overflow-x:hidden;overflow-y:hidden}
         </div>
       </form>
     </div>
-    <!-- Tab 2: CSV -->
+    <!-- Tab 2: Bulk Upload -->
     <div class="tab-content" id="tab1">
       <form action="{{ url_for('faculty_bp.upload_students_csv') }}" method="POST" enctype="multipart/form-data">
         <div class="file-drop" onclick="document.getElementById('csvFile').click()">
           <svg style="width:32px;height:32px;color:var(--primary);margin:0 auto 10px;display:block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
-          <div style="font-weight:600;margin-bottom:4px">Click to select CSV file</div>
+          <div id="fileStatus" style="font-weight:600;margin-bottom:4px">Click to select CSV or XLSX file</div>
           <div style="font-size:12px;color:var(--txt3)">Required columns: full_name, enrollment_no, password, branch, semester</div>
-          <input type="file" name="csv_file" id="csvFile" accept=".csv" style="display:none" onchange="this.parentElement.querySelector('div').textContent=this.files[0]?.name||'Click to select'">
+          <input type="file" name="csv_file" id="csvFile" accept=".csv, .xlsx" style="display:none" onchange="document.getElementById('fileStatus').textContent=this.files[0]?.name||'Click to select CSV or XLSX file'">
         </div>
         <div class="fg" style="margin-top:14px">
           <label>Assign to Course (Exam)</label>
@@ -446,7 +469,7 @@ body{overflow-x:hidden;overflow-y:hidden}
         </div>
         <div class="mact">
           <button type="button" class="btn-cancel" onclick="document.getElementById('addModal').classList.remove('open')">Cancel</button>
-          <button type="submit" class="btn-save">Upload CSV</button>
+          <button type="submit" class="btn-save">Upload & Process</button>
         </div>
       </form>
     </div>
@@ -465,16 +488,36 @@ function filterStudents(){
   const term = document.getElementById('sSrch').value.toLowerCase();
   const sem = document.getElementById('semFilter').value;
   const br = document.getElementById('branchFilter').value;
+  const stat = document.getElementById('statusFilter').value;
+  const subj = document.getElementById('subjectFilter').value;
+  
   let vis = 0;
   document.querySelectorAll('#sBody tr').forEach(tr=>{
     const nm = tr.dataset.name||'';
     const s = tr.dataset.sem||'';
     const b = tr.dataset.branch||'';
-    const ok = (!term||nm.includes(term))&&(!sem||s===sem)&&(!br||b===br);
+    const st = tr.dataset.status||'';
+    const subs = tr.dataset.subjects||'';
+    
+    const ok = (!term||nm.includes(term)) && 
+               (!sem||s===sem) && 
+               (!br||b===br) && 
+               (!stat||st===stat) && 
+               (!subj||subs.includes(subj));
+               
     tr.style.display = ok?'':'none';
     if(ok) vis++;
   });
   document.getElementById('cntPill').textContent = vis+' student'+(vis!==1?'s':'');
+}
+
+function clearFilters() {
+    document.getElementById('sSrch').value = '';
+    document.getElementById('semFilter').value = '';
+    document.getElementById('branchFilter').value = '';
+    document.getElementById('statusFilter').value = '';
+    document.getElementById('subjectFilter').value = '';
+    filterStudents();
 }
 
 // / shortcut to focus search
@@ -482,5 +525,9 @@ document.addEventListener('keydown', e=>{
   if(e.key==='/'&&document.activeElement.tagName!=='INPUT'){ e.preventDefault(); document.getElementById('sSrch').focus(); }
 });
 </script>
+
+<!-- Dark/Light Mode Toggle Button -->
+<button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" title="Switch to Light Mode">🌙</button>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>
 </html>

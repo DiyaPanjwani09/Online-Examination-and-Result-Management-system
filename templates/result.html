@@ -1,87 +1,78 @@
 <!DOCTYPE html>
-<html lang="en">
+<html class="dark" lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Result Page</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "background": "#060e20",
+                      "surface": "#060e20",
+                      "on-surface": "#dee5ff",
+                      "surface-variant": "#192540",
+                      "on-surface-variant": "#a3aac4",
+                      "primary": "#a3a6ff",
+                      "secondary": "#3adffa",
+                      "error": "#ff6e84"
+              },
+              "fontFamily": {
+                      "headline": ["Manrope"],
+                      "body": ["Inter"]
+              }
+            }
+          }
+        }
+  </script>
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial;}
-    body{
-      background:linear-gradient(135deg,#0f172a,#1e293b);
-      color:white;
-      padding:30px;
+    body {
+      background-color: #060e20;
+      color: #dee5ff;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
       display: flex;
       justify-content: center;
       align-items: center;
-      min-height: 100vh;
+      padding: 1.5rem;
     }
-    .result-box{
-      width: 100%;
-      max-width:700px;
-      padding:25px;
-      border-radius:20px;
-      background:rgba(255,255,255,0.1);
-      backdrop-filter:blur(10px);
-      box-shadow:0 0 25px rgba(0,0,0,0.5);
-      text-align:center;
+    .glass-box {
+      background: rgba(20, 31, 56, 0.6);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 20px 40px rgba(163, 166, 255, 0.12);
+      border: 1px solid rgba(64, 72, 93, 0.2);
     }
-    h1{color:#38bdf8;margin-bottom:15px;}
-    .score{
-      font-size:50px;
-      font-weight:bold;
-      margin:15px 0;
-    }
-    .status{
-      font-size:20px;
-      font-weight:bold;
-      padding:10px 20px;
-      border-radius:12px;
-      display:inline-block;
-      margin-bottom:20px;
-    }
-    .btn{
-      padding:12px 18px;
-      border:none;
-      border-radius:10px;
-      background:#38bdf8;
-      font-weight:bold;
-      cursor:pointer;
-      margin:10px;
-      transition:0.3s;
-      text-decoration: none;
-      color: black;
-      display: inline-block;
-    }
-    .btn:hover{background:#0284c7;transform:scale(1.05);}
-    .details{
-      margin-top:20px;
-      text-align:left;
-      padding:20px;
-      border-radius:15px;
-      background:rgba(0,0,0,0.25);
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .details p{margin:5px 0; font-size: 18px;}
   </style>
+  <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
-<body>
+<body class="selection:bg-primary/20 selection:text-primary">
 
-  <div class="result-box">
-    <h1>📊 Exam Result</h1>
-    <p>JEE Main - Mock Test</p>
+  <div class="glass-box w-full max-w-2xl p-8 md:p-12 rounded-3xl text-center relative overflow-hidden">
+    <div class="absolute top-0 right-0 w-32 h-32 bg-primary/20 rounded-full blur-3xl -mr-16 -mt-16"></div>
+    
+    <h1 class="font-headline text-3xl md:text-4xl font-extrabold text-primary mb-2">📊 Exam Result</h1>
+    <p class="text-on-surface-variant font-medium mb-8">Post-Exam Summary</p>
 
-    <div class="score" id="scoreText">--</div>
-    <div class="status" id="statusBox">Pending</div>
+    <div class="text-6xl md:text-7xl font-headline font-black text-on-surface mb-6" id="scoreText">--</div>
+    
+    <div id="statusBox" class="inline-block px-6 py-2 rounded-full font-bold text-sm tracking-widest uppercase mb-8 border transition-all">Pending</div>
 
-    <div class="details" id="details">
-      <p>Loading details...</p>
+    <div class="bg-[#091328] p-6 rounded-2xl grid grid-cols-2 gap-4 text-left border border-white/5 mb-8" id="details">
+      <p class="text-on-surface-variant text-center col-span-2">Loading details...</p>
     </div>
 
-    <!-- Corrected link to student_dashboard.html -->
-    <a href="{{ url_for('student_bp.student_dashboard') }}" class="btn">🏠 Dashboard</a>
-    <button class="btn" onclick="window.print()">🖨 Print Result</button>
+    <div class="flex flex-col md:flex-row gap-4 justify-center">
+        <a href="{{ url_for('student_bp.student_dashboard') }}" class="font-bold py-3 px-6 rounded-xl bg-surface-variant text-on-surface hover:bg-[#1f2b49] transition-colors border border-white/10 flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-xl">home</span> Dashboard
+        </a>
+        <button onclick="window.print()" class="font-bold py-3 px-6 rounded-xl bg-gradient-to-r from-primary to-[#6063ee] text-[#0f00a4] hover:opacity-90 transition-opacity shadow-lg shadow-primary/20 flex items-center justify-center gap-2">
+            <span class="material-symbols-outlined text-xl">print</span> Print Result
+        </button>
+    </div>
   </div>
 
   <script>
@@ -89,35 +80,56 @@
         const dataStr = localStorage.getItem("examResult");
         if(dataStr) {
             const data = JSON.parse(dataStr);
-            console.log(data);
             
             // Score Display
-            // JEE Main usually is out of 300 (75 qs * 4). Here we have 30qs * 4 = 120 max.
             document.getElementById("scoreText").innerText = `${data.score} / ${data.total * 4}`;
 
             const statusBox = document.getElementById("statusBox");
             if(data.percentage >= 40){
-                statusBox.style.background = "#22c55e"; // Green
+                statusBox.className = "inline-block px-6 py-2 rounded-full font-bold text-sm tracking-widest uppercase mb-8 border border-green-500/20 bg-green-500/10 text-green-400";
                 statusBox.innerText = "✅ QUALIFIED";
             } else {
-                statusBox.style.background = "#ef4444"; // Red
+                statusBox.className = "inline-block px-6 py-2 rounded-full font-bold text-sm tracking-widest uppercase mb-8 border border-error/20 bg-error/10 text-error";
                 statusBox.innerText = "❌ NOT QUALIFIED";
             }
 
             document.getElementById("details").innerHTML = `
-                <p><b>Total Questions:</b> ${data.total}</p>
-                <p><b>Score:</b> ${data.score}</p>
-                <p><b>Correct Answers:</b> ${data.correct}</p>
-                <p><b>Wrong Answers:</b> ${data.wrong}</p>
-                <p><b>Unattempted:</b> ${data.unattempted}</p>
-                <p><b>Accuracy:</b> ${data.percentage}%</p>
+                <div class="bg-surface p-4 rounded-xl">
+                    <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mb-1">Total Questions</p>
+                    <p class="text-lg font-bold text-on-surface">${data.total}</p>
+                </div>
+                <div class="bg-surface p-4 rounded-xl">
+                    <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mb-1">Score Obtained</p>
+                    <p class="text-lg font-bold text-primary">${data.score}</p>
+                </div>
+                <div class="bg-surface p-4 rounded-xl">
+                    <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mb-1">Correct</p>
+                    <p class="text-lg font-bold text-green-400">${data.correct}</p>
+                </div>
+                <div class="bg-surface p-4 rounded-xl">
+                    <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mb-1">Wrong</p>
+                    <p class="text-lg font-bold text-error">${data.wrong}</p>
+                </div>
+                <div class="bg-surface p-4 rounded-xl col-span-2 flex justify-between items-center">
+                    <div>
+                        <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mb-1">Unattempted</p>
+                        <p class="text-lg font-bold text-on-surface">${data.unattempted}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider mb-1">Accuracy</p>
+                        <p class="text-2xl font-black text-secondary">${data.percentage}%</p>
+                    </div>
+                </div>
             `;
         } else {
-            document.getElementById("details").innerHTML = "<p>No result data found. Please take the exam first.</p>";
+            document.getElementById("details").innerHTML = "<p class='text-on-surface-variant text-center col-span-2 py-4'>No result data found. Please take the exam first.</p>";
             document.getElementById("statusBox").style.display = "none";
         }
     });
   </script>
 
+<!-- Dark/Light Mode Toggle Button -->
+<button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" title="Switch to Light Mode">🌙</button>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>
-</html>
+</html>

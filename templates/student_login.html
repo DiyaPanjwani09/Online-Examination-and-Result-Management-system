@@ -236,6 +236,7 @@ body {
 .flash-success { background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.3); }
 .flash-info { background: rgba(59, 130, 246, 0.2); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.3); }
 </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
 
@@ -400,6 +401,7 @@ body {
     <div class="links-container">
       <a href="{{ url_for('auth_bp.forgot_password') }}" class="auth-link">Forgot Password?</a>
       <a href="{{ url_for('auth_bp.faculty_login') }}" class="auth-link">Faculty Portal &rarr;</a>
+      <a href="{{ url_for('admin_bp.admin_login') }}" class="auth-link">Admin Portal &rarr;</a>
     </div>
 
   </div>
@@ -611,5 +613,9 @@ init();
 animate();
 </script>
 
+
+<!-- Dark/Light Mode Toggle Button -->
+<button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" title="Switch to Light Mode">🌙</button>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>
 </html>

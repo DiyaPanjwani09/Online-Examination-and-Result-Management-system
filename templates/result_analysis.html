@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html class="dark" lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Result Analysis | {{ exam.exam_name }}</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Inter:wght@400;500;600;700&family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "background": "#060e20", "surface": "#060e20",
+                      "on-surface": "#dee5ff", "surface-variant": "#192540",
+                      "on-surface-variant": "#a3aac4",
+                      "primary": "#a3a6ff", "primary-dim": "#6063ee",
+                      "secondary": "#3adffa", "secondary-dim": "#1ad0eb",
+                      "error": "#ff6e84", "success": "#10b981",
+                      "surface-container-highest": "#192540",
+                      "surface-container-low": "#091328"
+              },
+              "fontFamily": { "headline": ["Manrope"], "body": ["Inter"], "label": ["Inter"] }
+            }
+          }
+        }
+</script>
+<style>
+    body { background-color: #060e20; color: #dee5ff; font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
+    .glass-card { background: rgba(20, 31, 56, 0.6); backdrop-filter: blur(20px); border: 1px solid rgba(64, 72, 93, 0.2); }
+    .hero-glow { box-shadow: 0 20px 40px rgba(163, 166, 255, 0.12); }
+</style>
+<link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
+</head>
+<body class="selection:bg-primary/20 selection:text-primary">
+
+<div class="max-w-4xl mx-auto px-6 py-10 space-y-8 relative">
+    <div class="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl opacity-50 -mr-32 -mt-32"></div>
+
+    <a href="{{ url_for('student_bp.result_page') }}" class="inline-flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors font-semibold group z-10 relative">
+        <span class="material-symbols-outlined text-lg group-active:-translate-x-1 transition-transform">arrow_back</span>
+        Back to Results
+    </a>
+
+    <header class="text-center z-10 relative space-y-2">
+        <h1 class="font-headline text-4xl md:text-5xl font-extrabold text-on-surface">Exam Analysis</h1>
+        <p class="text-secondary text-lg font-medium">{{ exam.exam_name }}</p>
+    </header>
+
+    <div class="glass-card p-8 md:p-12 rounded-[2rem] relative z-10 hero-glow">
+        {% set pct = (attempt.score / attempt.total_marks * 100)|round(1) %}
+        {% set passed = pct >= 40 %}
+
+        <div class="text-center mb-10">
+            <div class="inline-block px-8 py-3 rounded-full font-bold text-sm tracking-widest uppercase transition-all {{ 'border border-green-500/20 bg-green-500/10 text-green-400' if passed else 'border border-error/20 bg-error/10 text-error' }}">
+                Status: {{ 'Passed' if passed else 'Failed' }}
+            </div>
+        </div>
+
+        <div class="w-64 h-64 mx-auto relative flex flex-col items-center justify-center mb-12">
+            <canvas id="percentageChart" class="absolute inset-0"></canvas>
+            <div class="font-headline font-black text-6xl text-on-surface z-10">{{ pct }}<span class="text-3xl text-on-surface-variant">%</span></div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <div class="bg-surface-container-highest p-6 rounded-2xl text-center shadow-lg">
+                <span class="text-[11px] text-on-surface-variant font-bold uppercase tracking-widest block mb-2">Obtained Marks</span>
+                <div class="font-headline text-3xl font-extrabold text-primary">{{ attempt.score }}</div>
+            </div>
+            <div class="bg-surface-container-highest p-6 rounded-2xl text-center shadow-lg">
+                <span class="text-[11px] text-on-surface-variant font-bold uppercase tracking-widest block mb-2">Total Marks</span>
+                <div class="font-headline text-3xl font-extrabold text-secondary">{{ attempt.total_marks }}</div>
+            </div>
+            <div class="bg-surface-container-highest p-6 rounded-2xl text-center shadow-lg">
+                <span class="text-[11px] text-on-surface-variant font-bold uppercase tracking-widest block mb-2">Attempt Date</span>
+                <div class="font-headline text-xl font-bold text-on-surface mt-2">{{ attempt.attempt_time[:10] }}</div>
+            </div>
+        </div>
+
+        <div class="pt-8 border-t border-white/5 space-y-4">
+            <div class="flex justify-between items-center py-3 border-b border-white/5">
+                <span class="text-on-surface-variant font-semibold text-sm">Student Name</span>
+                <span class="font-bold text-on-surface">{{ attempt.full_name }}</span>
+            </div>
+            <div class="flex justify-between items-center py-3 border-b border-white/5">
+                <span class="text-on-surface-variant font-semibold text-sm">Enrollment No.</span>
+                <span class="font-bold text-on-surface bg-surface-container-highest px-3 py-1 rounded-lg">{{ attempt.enrollment_no }}</span>
+            </div>
+            <div class="flex justify-between items-center py-3 border-b border-white/5">
+                <span class="text-on-surface-variant font-semibold text-sm">Duration Used</span>
+                <span class="font-bold text-on-surface inline-flex items-center gap-1">
+                    <span class="material-symbols-outlined text-sm">timer</span> Completed
+                </span>
+            </div>
+            <div class="flex justify-between items-center py-3">
+                <span class="text-on-surface-variant font-semibold text-sm">Proctoring Status</span>
+                <span class="font-bold text-green-400 inline-flex items-center gap-1 bg-green-500/10 px-3 py-1 border border-green-500/20 rounded-lg">
+                    <span class="material-symbols-outlined text-sm">verified_user</span> Secure
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const ctx = document.getElementById('percentageChart').getContext('2d');
+    const isPassed = {{ 'true' if passed else 'false' }};
+    const mainColor = isPassed ? '#10b981' : '#ff6e84'; // green or red based on pass
+    
+    new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            datasets: [{
+                data: [{{ pct }}, {{ 100 - pct }}],
+                backgroundColor: [mainColor, 'rgba(255,255,255,0.05)'],
+                borderWidth: 0,
+                borderRadius: 15
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '80%',
+            plugins: { legend: { display: false }, tooltip: { enabled: false } },
+            animation: {
+                animateScale: true,
+                animateRotate: true
+            }
+        }
+    });
+</script>
+
+
+<!-- Dark/Light Mode Toggle Button -->
+<button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" title="Switch to Light Mode">🌙</button>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
+</body>
+</html>

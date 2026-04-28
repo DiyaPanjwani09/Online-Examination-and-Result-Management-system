@@ -40,6 +40,7 @@ body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--txt);disp
 
 @media print{.sidebar,.topbar{display:none}.wrap{margin:0}}
 </style>
+    <link rel="stylesheet" href="{{ url_for('static', filename='theme.css') }}">
 </head>
 <body>
 
@@ -66,9 +67,10 @@ body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--txt);disp
     </a>
   </nav>
   <div style="height:1px;background:var(--border);margin:14px 0"></div>
-  <a href="{{ url_for('auth_bp.logout') }}" class="nav-a" style="color:#f87171">
-    <svg style="width:17px;height:17px" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>Sign Out
-  </a>
+  <a href="{{ url_for('auth_bp.logout') }}" title="Sign Out" style="display:flex; align-items:center; gap:12px; padding:12px 16px; color:#ef4444; text-decoration:none; border-radius:8px; font-weight:500; transition:all 0.2s; margin-top: auto;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:20px;height:20px;"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+      Sign Out
+    </a>
 </aside>
 
 <div class="wrap">
@@ -118,5 +120,9 @@ body{font-family:'Inter',sans-serif;background:var(--dark);color:var(--txt);disp
   </main>
 </div>
 
+
+<!-- Dark/Light Mode Toggle Button -->
+<button id="theme-toggle-btn" class="theme-toggle" onclick="toggleTheme()" title="Switch to Light Mode">🌙</button>
+<script src="{{ url_for('static', filename='theme.js') }}"></script>
 </body>
 </html>
